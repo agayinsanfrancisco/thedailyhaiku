@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node -e \"const{execSync}=require('child_process');process.env.DATABASE_URL='file:./data/thedailyhaiku.db';try{execSync('npx drizzle-kit push --force',{stdio:'inherit'})}catch(e){console.error('DB push failed:',e.message)};execSync('next start',{stdio:'inherit'})\"",
     "lint": "eslint",
     "db:push": "DATABASE_URL=file:./data/thedailyhaiku.db npx drizzle-kit push",
     "db:seed": "DATABASE_URL=file:./data/thedailyhaiku.db npx tsx src/seed.ts",
@@ -19,7 +19,8 @@
     "next": "^15.5.19",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "syllable": "^5.0.1"
+    "syllable": "^5.0.1",
+    "drizzle-kit": "^0.31.10"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -27,7 +28,6 @@
     "@types/node": "^20",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "^15.5.19",
     "tailwindcss": "^4",
