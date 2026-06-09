@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+  build:
+    name: Build
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Create data directory
+        run: mkdir -p data
+
+      - name: Push database schema
+        run: npx drizzle-kit push
+        env:
+          DATABASE_URL: file:./data/thedailyhaiku.db
+
+      - name: Seed database
+        run: npx tsx src/seed.ts
+        env:
+          DATABASE_URL: file:./data/thedailyhaiku.db
+
+      - name: Build Next.js
+        run: npm run build
+        env:
+          DATABASE_URL: file:./data/thedailyhaiku.db
+          ADMIN_PASSWORD: ci-test-password
+          SESSION_SECRET: ci-session-secret-at-least-32-chars-long!!
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: .next/
