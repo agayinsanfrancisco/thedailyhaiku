@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "mkdir -p data && DATABASE_URL=file:./data/thedailyhaiku.db npx drizzle-kit push --force && next build",
-    "start": "node -e \"const{execSync}=require('child_process');process.env.DATABASE_URL='file:./data/thedailyhaiku.db';try{execSync('npx drizzle-kit push --force',{stdio:'inherit'})}catch(e){console.error('DB push failed:',e.message)};execSync('next start',{stdio:'inherit'})\"",
+    "start": "node -e \"const{execSync}=require('child_process');process.env.DATABASE_URL='file:./data/thedailyhaiku.db';try{execSync('npx drizzle-kit push --force',{stdio:'inherit'})}catch(e){console.error('DB push failed:',e.message)};try{execSync('npx tsx src/seed.ts',{stdio:'inherit'})}catch(e){console.error('Seed failed:',e.message)};execSync('next start',{stdio:'inherit'})\"",
     "lint": "eslint",
     "db:push": "DATABASE_URL=file:./data/thedailyhaiku.db npx drizzle-kit push",
     "db:seed": "DATABASE_URL=file:./data/thedailyhaiku.db npx tsx src/seed.ts",
