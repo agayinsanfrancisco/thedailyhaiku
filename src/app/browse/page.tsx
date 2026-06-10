@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { haikus, categories } from "@/lib/db/schema";
 import { eq, and, desc, like } from "drizzle-orm";
+import BrowseFilter from "./BrowseFilter";
 
 function formatDate(mmdd: string) {
   const [m, d] = mmdd.split("-").map(Number);
@@ -65,65 +66,12 @@ export default async function BrowsePage({
       </p>
       <h1 className="text-2xl font-serif mb-8">All Haikus</h1>
 
-      <form className="flex flex-wrap gap-3 mb-10 items-end">
-        <div>
-          <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-1">
-            Category
-          </label>
-          <select
-            name="category"
-            defaultValue={params.category ?? ""}
-            onChange={(e) => {
-              const form = e.currentTarget.form;
-              if (form) form.submit();
-            }}
-            className="px-3 py-2 border border-[var(--rule)] bg-transparent text-sm focus:outline-none focus:border-[var(--ink)] transition-colors"
-          >
-            <option value="">All categories</option>
-            {allCategories.map((cat) => (
-              <option key={cat.slug} value={cat.slug}>{cat.name}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-1">
-            Author
-          </label>
-          <input
-            type="text"
-            name="author"
-            defaultValue={params.author ?? ""}
-            placeholder="Search author..."
-            className="px-3 py-2 border border-[var(--rule)] bg-transparent text-sm focus:outline-none focus:border-[var(--ink)] transition-colors w-40 placeholder:text-[var(--accent-dim)]"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-1">
-            Date
-          </label>
-          <input
-            type="text"
-            name="date"
-            defaultValue={params.date ?? ""}
-            placeholder="MM-DD (e.g. 06-10)"
-            className="px-3 py-2 border border-[var(--rule)] bg-transparent text-sm focus:outline-none focus:border-[var(--ink)] transition-colors w-36 placeholder:text-[var(--accent-dim)]"
-          />
-        </div>
-        <button
-          type="submit"
-          className="px-4 py-2 text-xs font-[system-ui] tracking-wider uppercase border-2 border-[var(--ink)] text-[var(--ink)] hover:bg-[var(--ink)] hover:text-[var(--paper)] transition-colors"
-        >
-          Filter
-        </button>
-        {(params.category || params.author || params.date) && (
-          <Link
-            href="/browse"
-            className="px-4 py-2 text-xs font-[system-ui] text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors"
-          >
-            Clear
-          </Link>
-        )}
-      </form>
+      <BrowseFilter
+        categories={allCategories}
+        currentCategory={params.category ?? null}
+        currentAuthor={params.author ?? null}
+        currentDate={params.date ?? null}
+      />
 
       {results.length === 0 ? (
         <div className="text-center py-16 text-[var(--ink-muted)]">
