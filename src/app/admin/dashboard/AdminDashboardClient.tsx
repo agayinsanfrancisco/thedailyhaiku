@@ -88,7 +88,7 @@ export default function AdminDashboardClient() {
           <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase font-[system-ui] mb-1">
             Admin
           </p>
-          <h1 className="text-xl font-serif">Dashboard</h1>
+          <h1 className="text-xl ">Dashboard</h1>
         </div>
         <div className="flex gap-px text-xs font-[system-ui]">
           {(["all", "pending", "edits_requested", "approved", "rejected"] as const).map((key) => (
@@ -116,7 +116,7 @@ export default function AdminDashboardClient() {
         </div>
       ) : filteredHaikus.length === 0 ? (
         <div className="text-center py-16 text-[var(--ink-muted)]">
-          <p className="font-serif text-lg">No haikus yet</p>
+          <p className="text-lg">No haikus yet</p>
           <p className="text-sm mt-1 font-[system-ui]">Haikus submitted by users will appear here.</p>
         </div>
       ) : (

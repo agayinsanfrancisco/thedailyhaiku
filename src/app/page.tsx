@@ -62,107 +62,92 @@ async function getCategoryStats() {
   return out;
 }
 
-async function getStats() {
-  const [total] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(haikus)
-    .where(eq(haikus.status, "approved"));
-  return { totalHaikus: Number(total?.count ?? 0) };
-}
-
 export default async function HomePage() {
   const { mmdd, year } = getToday();
-  const [todayHaiku, recentHaikus, categoryStats, stats] = await Promise.all([
+  const [todayHaiku, recentHaikus, categoryStats] = await Promise.all([
     getTodayHaiku(mmdd, year),
     getRecentHaikus(),
     getCategoryStats(),
-    getStats(),
   ]);
 
   return (
-    <article className="max-w-5xl mx-auto px-6">
-      <section className="pt-24 pb-16 border-b border-[var(--rule)]">
-        <div className="flex items-start justify-between mb-12">
-          <div className="space-y-1">
-            <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase font-[system-ui]">
-              {formatDate(mmdd)}, {year}
-            </p>
-            <p className="text-xs text-[var(--ink-muted)] font-[system-ui]">
-              Day {String(year).slice(-2)}{mmdd.replace("-", "")}
-            </p>
-          </div>
-          {stats.totalHaikus > 0 && (
-            <p className="text-xs text-[var(--ink-muted)] font-[system-ui] tabular-nums">
-              {stats.totalHaikus} haiku{stats.totalHaikus !== 1 ? "s" : ""} published
-            </p>
-          )}
+    <div className="max-w-5xl mx-auto px-6">
+      <section className="py-8 border-b border-[var(--rule)]">
+        <div className="flex items-center gap-2 text-xs text-[var(--ink-muted)]">
+          <span>{formatDate(mmdd)}</span>
+          <span className="text-[var(--rule)]">/</span>
+          <Link href="/write" className="text-[var(--accent)] hover:text-[var(--ink)] transition-colors">
+            Write today&rsquo;s &rarr;
+          </Link>
         </div>
+      </section>
 
+      <section className="py-6 border-b border-[var(--rule)]">
+        <div className="flex flex-wrap gap-2">
+          {categoryStats.map((cat) => (
+            <Link
+              key={cat.slug}
+              href={`/browse?category=${cat.slug}`}
+              className="text-xs text-[var(--ink-muted)] border border-[var(--rule)] px-3 py-1 hover:border-[var(--ink)] hover:text-[var(--ink)] transition-colors"
+            >
+              {cat.name}
+              {cat.count > 0 && (
+                <span className="ml-1.5 text-[var(--accent)]">{cat.count}</span>
+              )}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="pt-12 pb-10">
         {todayHaiku ? (
           <div className="animate-fade-up">
-            <div className="text-[var(--accent)] text-xs font-[system-ui] tracking-widest uppercase mb-6">
-              Today&rsquo;s Haiku
+            <div className="text-sm leading-relaxed space-y-1 mb-5">
+              <p className="text-[clamp(1.5rem,4vw,2.5rem)]">{todayHaiku.line1}</p>
+              <p className="text-[clamp(1.5rem,4vw,2.5rem)]">{todayHaiku.line2}</p>
+              <p className="text-[clamp(1.5rem,4vw,2.5rem)]">{todayHaiku.line3}</p>
             </div>
-            <div className="text-[clamp(1.75rem,5vw,3.5rem)] leading-[1.3] space-y-1.5 mb-6">
-              <p>{todayHaiku.line1}</p>
-              <p>{todayHaiku.line2}</p>
-              <p>{todayHaiku.line3}</p>
-            </div>
-            <div className="flex items-center gap-4 text-sm text-[var(--ink-muted)]">
+            <div className="flex items-center gap-3 text-sm text-[var(--ink-muted)]">
               {todayHaiku.authorName && <span>&mdash; {todayHaiku.authorName}</span>}
-              {todayHaiku.title && (
-                <span className="text-xs italic">&ldquo;{todayHaiku.title}&rdquo;</span>
-              )}
-              {todayHaiku.categoryName && (
-                <span className="text-xs">in {todayHaiku.categoryName}</span>
-              )}
+              {todayHaiku.title && <span className="text-xs">&ldquo;{todayHaiku.title}&rdquo;</span>}
+              {todayHaiku.categoryName && <span className="text-xs text-[var(--accent)]">{todayHaiku.categoryName}</span>}
             </div>
           </div>
         ) : (
           <div className="animate-fade-up">
-            <p className="text-[var(--ink-muted)] text-sm font-[system-ui] mb-6">
-              No haiku has been written for today yet.
+            <p className="text-sm text-[var(--ink-muted)] mb-3">
+              No haiku for today yet.
             </p>
-            <div className="text-[clamp(2rem,5vw,3.5rem)] leading-[1.3] space-y-1.5 mb-8 text-[var(--ink-muted)]">
-              <p>the day waits for</p>
-              <p>the sound of your own words</p>
-              <p>a breath, a verse, now</p>
-            </div>
             <Link
               href="/write"
-              className="inline-block border-2 border-[var(--ink)] px-8 py-3 text-sm font-[system-ui] tracking-wider uppercase hover:bg-[var(--ink)] hover:text-[var(--paper)] transition-colors"
+              className="text-sm text-[var(--accent)] hover:text-[var(--ink)] transition-colors border-b border-[var(--accent-dim)] hover:border-[var(--ink)]"
             >
-              Write Today&rsquo;s Haiku
+              Write today&rsquo;s haiku
             </Link>
           </div>
         )}
       </section>
 
       {recentHaikus.length > 0 && (
-        <section className="pt-16 pb-8">
-          <h2 className="text-xs text-[var(--ink-muted)] font-[system-ui] tracking-widest uppercase mb-8">
-            Recent Haikus
-          </h2>
+        <section className="pt-6 pb-8 border-t border-[var(--rule)]">
+          <p className="text-xs text-[var(--ink-muted)] mb-6">Recent haikus</p>
           <div className="columns-1 sm:columns-2 gap-8 [column-rule:1px_solid_var(--rule)]">
             {recentHaikus.map((haiku, i) => (
               <Link
                 key={haiku.id}
                 href={`/haiku/${haiku.id}`}
-                className="block break-inside-avoid mb-8 p-0 group animate-reveal"
-                style={{ animationDelay: `${i * 80}ms` }}
+                className="block break-inside-avoid mb-6 p-0 group animate-reveal"
+                style={{ animationDelay: `${i * 60}ms` }}
               >
-                <div className="border-t border-[var(--rule)] pt-4">
-                  <div className="text-[17px] leading-[1.55] space-y-0.5 mb-3">
+                <div className="border-t border-[var(--rule)] pt-3">
+                  <div className="text-sm leading-relaxed space-y-0.5 mb-2">
                     <p>{haiku.line1}</p>
                     <p>{haiku.line2}</p>
                     <p>{haiku.line3}</p>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-[var(--ink-muted)]">
+                  <div className="flex items-center gap-2 text-xs text-[var(--ink-muted)]">
                     <span>{formatDate(haiku.date)}</span>
                     {haiku.categoryName && <span className="text-[var(--accent)]">{haiku.categoryName}</span>}
-                    <span className="group-hover:text-[var(--ink)] transition-colors ml-auto opacity-0 group-hover:opacity-100">
-                      Read
-                    </span>
                   </div>
                 </div>
               </Link>
@@ -170,20 +155,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      <section className="py-16 border-t border-[var(--rule)]">
-        <h2 className="text-xs text-[var(--ink-muted)] font-[system-ui] tracking-widest uppercase mb-8">
-          Categories
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-12 gap-y-4">
-          {categoryStats.map((cat) => (
-            <div key={cat.slug} className="text-sm">
-              <span className="text-[var(--accent)]">{cat.name}</span>
-              <span className="text-[var(--ink-muted)] ml-2 tabular-nums">{cat.count}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-    </article>
+    </div>
   );
 }

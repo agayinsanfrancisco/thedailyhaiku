@@ -28,7 +28,7 @@ export default function SyllableCounter({
         value={line}
         onChange={(e) => onChange(e.target.value)}
         placeholder={index === 0 ? "five syllables" : index === 1 ? "seven syllables" : "five syllables"}
-        className="flex-1 px-3 py-2 border border-[var(--rule)] bg-transparent font-serif text-base focus:outline-none focus:border-[var(--ink)] transition-colors placeholder:text-[var(--accent-dim)]"
+        className="flex-1 px-3 py-2 border border-[var(--rule)] bg-transparent text-base focus:outline-none focus:border-[var(--ink)] transition-colors placeholder:text-[var(--accent-dim)]"
         maxLength={100}
       />
       <span

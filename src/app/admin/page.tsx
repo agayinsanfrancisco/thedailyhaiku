@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
       <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase font-[system-ui] mb-2 text-center">
         Admin
       </p>
-      <h1 className="text-xl font-serif text-center mb-8">Sign In</h1>
+      <h1 className="text-xl text-center mb-8">Sign In</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-1">

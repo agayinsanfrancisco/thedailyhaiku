@@ -39,7 +39,7 @@ export default function EventSelector({
       <p className="text-xs text-[var(--ink-muted)] font-[system-ui] tracking-widest uppercase mb-2">
         {displayDate}
       </p>
-      <h2 className="text-xl font-serif mb-4">Choose Your Inspiration</h2>
+      <h2 className="text-xl mb-4">Choose Your Inspiration</h2>
 
       {loading ? (
         <div className="space-y-3">
@@ -67,7 +67,7 @@ export default function EventSelector({
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <p className="font-serif text-sm text-[var(--ink)]">{event.title}</p>
+                  <p className="text-sm text-[var(--ink)]">{event.title}</p>
                   {event.description && (
                     <p className="text-xs text-[var(--ink-muted)] mt-1 leading-relaxed">{event.description}</p>
                   )}

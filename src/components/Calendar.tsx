@@ -93,7 +93,7 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h2 className="text-base font-serif text-[var(--ink)]">
+        <h2 className="text-sm font-medium">
           {MONTHS[currentMonth]} {currentYear}
         </h2>
         <button
@@ -109,7 +109,7 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
 
       <div className="grid grid-cols-7 gap-px mb-px">
         {DAYS.map((day) => (
-          <div key={day} className="text-center text-xs font-[system-ui] text-[var(--ink-muted)] py-2">
+          <div key={day} className="text-center text-xs text-[var(--ink-muted)] py-2">
             {day}
           </div>
         ))}
@@ -137,13 +137,12 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
                 onClick={() => handleDateClick(day)}
                 disabled={!available}
                 className={`
-                  aspect-square text-sm font-[system-ui] flex items-center justify-center
-                  transition-colors
+                  aspect-square text-sm flex items-center justify-center transition-colors font-medium
                   ${available
-                    ? "text-[var(--ink)] hover:bg-[var(--surface)] cursor-pointer"
-                    : "text-[var(--accent-dim)] cursor-not-allowed line-through"
+                    ? "bg-[var(--green-open-bg)] text-[var(--green-open)] hover:brightness-95 cursor-pointer"
+                    : "bg-[var(--red-taken-bg)] text-[var(--red-taken)] cursor-not-allowed"
                   }
-                  ${isToday ? "ring-1 ring-[var(--accent)] ring-inset" : ""}
+                  ${isToday ? "ring-2 ring-[var(--accent)] ring-inset" : ""}
                 `}
                 title={available ? "Open" : "Has a haiku"}
               >
@@ -154,13 +153,13 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
         </div>
       )}
 
-      <div className="flex items-center justify-center gap-6 mt-6 text-xs text-[var(--ink-muted)] font-[system-ui]">
+      <div className="flex items-center justify-center gap-6 mt-6 text-xs text-[var(--ink-muted)]">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-[var(--surface)] border border-[var(--rule)]" />
+          <div className="w-3 h-3 bg-[var(--green-open-bg)] border border-[var(--green-open)]" />
           <span>Open</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-[var(--accent-dim)] border border-[var(--accent-dim)]" />
+          <div className="w-3 h-3 bg-[var(--red-taken-bg)] border border-[var(--red-taken)]" />
           <span>Has haiku</span>
         </div>
       </div>

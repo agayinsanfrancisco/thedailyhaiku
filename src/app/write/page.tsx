@@ -7,7 +7,7 @@ export default function WritePage() {
         <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase font-[system-ui] mb-2">
           Write a Haiku
         </p>
-        <h1 className="text-2xl font-serif">Pick a Date</h1>
+        <h1 className="text-2xl ">Pick a Date</h1>
         <p className="text-sm text-[var(--ink-muted)] mt-2">
           Green dates are open for new haikus.
         </p>

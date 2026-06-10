@@ -75,7 +75,7 @@ export default async function HaikuPage({
           )}
         </div>
 
-        <div className="font-serif text-[clamp(1.5rem,4vw,2.5rem)] leading-[1.4] text-center mb-8 space-y-1">
+        <div className="text-[clamp(1.5rem,4vw,2.5rem)] leading-[1.4] text-center mb-8 space-y-1">
           <p>{haiku.line1}</p>
           <p>{haiku.line2}</p>
           <p>{haiku.line3}</p>

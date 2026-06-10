@@ -30,8 +30,11 @@ export default function RootLayout({
       <body>
         <nav className="border-b border-[var(--rule)]">
           <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-            <Link href="/" className="text-[15px] tracking-tight font-serif">
-              Daily<span className="text-[var(--accent)]">Haiku</span>
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <span className="w-2 h-2 bg-[var(--accent)] group-hover:opacity-80 transition-opacity" />
+              <span className="text-sm font-medium tracking-tight text-[var(--ink)]">
+                dailyhaiku
+              </span>
             </Link>
             <div className="flex items-center gap-5 text-sm">
               <Link href="/write" className="text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors">
@@ -49,7 +52,7 @@ export default function RootLayout({
         {children}
         <footer className="border-t border-[var(--rule)] mt-28">
           <div className="max-w-5xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[var(--ink-muted)]">
-            <span>&copy; {new Date().getFullYear()} The Daily Haiku</span>
+            <span>&copy; {new Date().getFullYear()} dailyhaiku</span>
             <div className="flex items-center gap-4">
               <Link href="/write" className="hover:text-[var(--ink)] transition-colors">Write</Link>
               <Link href="/admin" className="hover:text-[var(--ink)] transition-colors">Admin</Link>

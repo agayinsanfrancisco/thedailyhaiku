@@ -64,7 +64,7 @@ export default async function BrowsePage({
       <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase font-[system-ui] mb-2">
         Browse
       </p>
-      <h1 className="text-2xl font-serif mb-8">All Haikus</h1>
+      <h1 className="text-2xl mb-8">All Haikus</h1>
 
       <BrowseFilter
         categories={allCategories}
@@ -75,7 +75,7 @@ export default async function BrowsePage({
 
       {results.length === 0 ? (
         <div className="text-center py-16 text-[var(--ink-muted)]">
-          <p className="font-serif text-lg">No haikus found</p>
+          <p className="text-lg">No haikus found</p>
           <p className="text-sm mt-1 font-[system-ui]">Try different filters or write one!</p>
         </div>
       ) : (

@@ -71,7 +71,7 @@ export default function HaikuBuilder({
           <div className="text-xs text-[var(--ink-muted)] font-[system-ui] tracking-widest uppercase mb-3">
             Your Haiku
           </div>
-          <div className="text-xl font-serif leading-relaxed space-y-1">
+          <div className="text-xl leading-relaxed space-y-1">
             <p className={c1 === 5 ? "text-[var(--ink)]" : c1 > 5 ? "text-[var(--accent)]" : "text-[var(--ink-muted)]"}>
               {line1 || "______"}
             </p>

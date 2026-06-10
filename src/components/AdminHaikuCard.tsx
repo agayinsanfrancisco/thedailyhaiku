@@ -51,7 +51,7 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
           <div className="flex items-center gap-2">
             <span className="text-xs font-[system-ui] text-[var(--ink-muted)]">{dateLabel}</span>
             {haiku.title && (
-              <span className="text-sm font-serif text-[var(--ink)]">&mdash; {haiku.title}</span>
+              <span className="text-sm text-[var(--ink)]">&mdash; {haiku.title}</span>
             )}
           </div>
         </div>
@@ -60,7 +60,7 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
         </span>
       </div>
 
-      <div className="font-serif text-[15px] text-[var(--ink)] mb-3 leading-relaxed">
+      <div className="text-[15px] text-[var(--ink)] mb-3 leading-relaxed">
         <p>{haiku.line1}</p>
         <p>{haiku.line2}</p>
         <p>{haiku.line3}</p>
