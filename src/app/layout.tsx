@@ -27,51 +27,32 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-white text-gray-900 font-sans antialiased">
-        <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-lg">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm group-hover:shadow-md transition-shadow">
-                H
-              </span>
-              <span className="font-semibold text-base tracking-tight">
-                Daily<span className="text-indigo-600">Haiku</span>
-              </span>
+      <body>
+        <nav className="border-b border-[var(--rule)]">
+          <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+            <Link href="/" className="text-[15px] tracking-tight font-serif">
+              Daily<span className="text-[var(--accent)]">Haiku</span>
             </Link>
-            <div className="flex items-center gap-6 text-sm">
-              <Link
-                href="/write"
-                className="text-gray-600 hover:text-gray-900 transition-colors font-medium hidden sm:block"
-              >
+            <div className="flex items-center gap-5 text-sm">
+              <Link href="/write" className="text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors">
                 Write
               </Link>
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-gray-900 transition-colors font-medium hidden sm:block"
-              >
+              <Link href="/" className="text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors">
                 Browse
               </Link>
-              <Link
-                href="/write"
-                className="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors shadow-sm"
-              >
-                Write a Haiku
-                <svg className="w-3.5 h-3.5 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
+              <Link href="/admin" className="text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors text-xs">
+                Admin
               </Link>
             </div>
           </div>
         </nav>
         {children}
-        <footer className="border-t border-gray-100 mt-24">
-          <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-400">
-              The Daily Haiku &mdash; words for every day.
-            </p>
-            <div className="flex items-center gap-4 text-xs text-gray-400">
-              <Link href="/write" className="hover:text-gray-600 transition-colors">Write</Link>
-              <Link href="/admin" className="hover:text-gray-600 transition-colors">Admin</Link>
+        <footer className="border-t border-[var(--rule)] mt-28">
+          <div className="max-w-5xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[var(--ink-muted)]">
+            <span>&copy; {new Date().getFullYear()} The Daily Haiku</span>
+            <div className="flex items-center gap-4">
+              <Link href="/write" className="hover:text-[var(--ink)] transition-colors">Write</Link>
+              <Link href="/admin" className="hover:text-[var(--ink)] transition-colors">Admin</Link>
             </div>
           </div>
         </footer>
