@@ -16,7 +16,9 @@ interface AdminHaikuCardProps {
     adminNotes: string | null;
     categoryName: string | null;
     eventTitle: string | null;
-    customEventTitle: string | null;
+    isFiller: string | null;
+    validationLink: string | null;
+    eventHeadline: string | null;
     createdAt: string | null;
   };
   onStatusChange: (id: number, status: string, notes: string) => Promise<void>;
@@ -40,7 +42,7 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
   const statusColors: Record<string, string> = {
     pending: "border-[var(--ink-muted)] text-[var(--ink-muted)]",
     approved: "border-[var(--accent)] text-[var(--accent)]",
-    rejected: "border-[var(--accent-dim)] text-[var(--ink-muted)]",
+    rejected: "border-[var(--accent-light)] text-[var(--ink-muted)]",
     edits_requested: "border-[var(--ink)] text-[var(--ink)]",
   };
 
@@ -49,13 +51,13 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
       <div className="flex items-start justify-between mb-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-[system-ui] text-[var(--ink-muted)]">{dateLabel}</span>
+            <span className="text-xs  text-[var(--ink-muted)]">{dateLabel}</span>
             {haiku.title && (
               <span className="text-sm text-[var(--ink)]">&mdash; {haiku.title}</span>
             )}
           </div>
         </div>
-        <span className={`text-[10px] font-[system-ui] tracking-wider uppercase border px-2 py-0.5 ${statusColors[haiku.status] ?? "border-[var(--rule)] text-[var(--ink-muted)]"}`}>
+        <span className={`text-[10px]  tracking-wider uppercase border px-2 py-0.5 ${statusColors[haiku.status] ?? "border-[var(--rule)] text-[var(--ink-muted)]"}`}>
           {haiku.status.replace("_", " ")}
         </span>
       </div>
@@ -66,21 +68,29 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
         <p>{haiku.line3}</p>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-3 text-xs text-[var(--ink-muted)] font-[system-ui]">
+      <div className="flex flex-wrap gap-2 mb-3 text-xs text-[var(--ink-muted)] ">
         {haiku.authorName && <span>By {haiku.authorName}</span>}
         {haiku.categoryName && (
           <span className="text-[var(--accent)]">{haiku.categoryName}</span>
+        )}
+        {haiku.isFiller === "true" && (
+          <span className="text-[var(--ink-muted)]">Filler haiku</span>
         )}
         {haiku.eventTitle && (
           <span className="text-[var(--ink-muted)] truncate max-w-[200px]" title={haiku.eventTitle}>
             {haiku.eventTitle.length > 40 ? haiku.eventTitle.slice(0, 40) + "..." : haiku.eventTitle}
           </span>
         )}
+        {haiku.eventHeadline && (
+          <span className="text-[var(--accent)] truncate max-w-[200px]" title={haiku.eventHeadline}>
+            {haiku.eventHeadline.length > 30 ? haiku.eventHeadline.slice(0, 30) + "..." : haiku.eventHeadline}
+          </span>
+        )}
       </div>
 
       {haiku.adminNotes && (
         <div className="border border-[var(--rule)] p-3 mb-3 text-sm text-[var(--ink-muted)]">
-          <span className="font-[system-ui] text-[var(--ink)]">Notes: </span>
+          <span className=" text-[var(--ink)]">Notes: </span>
           {haiku.adminNotes}
         </div>
       )}
@@ -88,7 +98,7 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
       <div className="space-y-2">
         <button
           onClick={() => setNotesOpen(!notesOpen)}
-          className="text-xs text-[var(--ink-muted)] hover:text-[var(--ink)] underline font-[system-ui]"
+          className="text-xs text-[var(--ink-muted)] hover:text-[var(--ink)] underline "
         >
           {notesOpen ? "Hide notes" : "Add notes"}
         </button>
@@ -105,14 +115,14 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
           <button
             onClick={() => handleAction("approved")}
             disabled={acting}
-            className="flex-1 px-3 py-1.5 border border-[var(--accent)] text-[var(--accent)] text-sm font-[system-ui] tracking-wider uppercase hover:bg-[var(--accent)] hover:text-[var(--paper)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-3 py-1.5 border border-[var(--accent)] text-[var(--accent)] text-sm  tracking-wider uppercase hover:bg-[var(--accent)] hover:text-[var(--paper)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Approve
           </button>
           <button
             onClick={() => handleAction("edits_requested")}
             disabled={acting || !notes.trim()}
-            className="flex-1 px-3 py-1.5 border border-[var(--ink)] text-[var(--ink)] text-sm font-[system-ui] tracking-wider uppercase hover:bg-[var(--ink)] hover:text-[var(--paper)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-3 py-1.5 border border-[var(--ink)] text-[var(--ink)] text-sm  tracking-wider uppercase hover:bg-[var(--ink)] hover:text-[var(--paper)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title={!notes.trim() ? "Add notes first" : "Request edits"}
           >
             Request Edits
@@ -120,7 +130,7 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
           <button
             onClick={() => handleAction("rejected")}
             disabled={acting}
-            className="flex-1 px-3 py-1.5 border border-[var(--accent-dim)] text-[var(--ink-muted)] text-sm font-[system-ui] tracking-wider uppercase hover:bg-[var(--accent-dim)] hover:text-[var(--ink)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-3 py-1.5 border border-[var(--accent-light)] text-[var(--ink-muted)] text-sm tracking-wider uppercase hover:bg-[var(--accent-light)] hover:text-[var(--ink)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Reject
           </button>

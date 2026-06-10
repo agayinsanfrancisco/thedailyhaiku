@@ -17,7 +17,9 @@ interface HaikuItem {
   adminNotes: string | null;
   categoryName: string | null;
   eventTitle: string | null;
-  customEventTitle: string | null;
+  isFiller: string | null;
+  validationLink: string | null;
+  eventHeadline: string | null;
   createdAt: string | null;
 }
 

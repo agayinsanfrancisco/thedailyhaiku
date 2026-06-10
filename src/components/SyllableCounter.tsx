@@ -20,7 +20,7 @@ export default function SyllableCounter({
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs font-[system-ui] text-[var(--ink-muted)] w-12 shrink-0">
+      <span className="text-xs text-[var(--ink-muted)] w-12 shrink-0">
         Line {index + 1}
       </span>
       <input
@@ -28,7 +28,7 @@ export default function SyllableCounter({
         value={line}
         onChange={(e) => onChange(e.target.value)}
         placeholder={index === 0 ? "five syllables" : index === 1 ? "seven syllables" : "five syllables"}
-        className="flex-1 px-3 py-2 border border-[var(--rule)] bg-transparent text-base focus:outline-none focus:border-[var(--ink)] transition-colors placeholder:text-[var(--accent-dim)]"
+        className="flex-1 px-3 py-2 border border-[var(--rule)] bg-transparent text-base focus:outline-none focus:border-[var(--ink)] transition-colors placeholder:text-[var(--accent-light)]"
         maxLength={100}
       />
       <span
@@ -37,7 +37,7 @@ export default function SyllableCounter({
           ${isTarget ? "text-[var(--ink)]" : ""}
           ${isOver ? "text-[var(--accent)]" : ""}
           ${isUnder ? "text-[var(--ink-muted)]" : ""}
-          ${line.trim().length === 0 ? "text-[var(--accent-dim)]" : ""}
+          ${line.trim().length === 0 ? "text-[var(--accent-light)]" : ""}
         `}
       >
         {count}/{target}

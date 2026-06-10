@@ -1,6 +1,7 @@
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./lib/db/schema";
+import additionalEvents from "../data/additional-events.json";
 
 const client = createClient({
   url: process.env.DATABASE_URL ?? "file:./data/thedailyhaiku.db",
@@ -9,14 +10,14 @@ const client = createClient({
 const db = drizzle(client, { schema });
 
 const categoriesList = [
-  { name: "Movies & TV", slug: "movies-tv", description: "Film and television moments", color: "#ef4444" },
-  { name: "Music", slug: "music", description: "Musical milestones and moments", color: "#f59e0b" },
-  { name: "Sports", slug: "sports", description: "Athletic achievements and history", color: "#22c55e" },
-  { name: "Technology", slug: "technology", description: "Tech breakthroughs and innovations", color: "#06b6d4" },
-  { name: "Science & Nature", slug: "science-nature", description: "Scientific discoveries and natural wonders", color: "#8b5cf6" },
-  { name: "Politics & History", slug: "politics-history", description: "Political and historical events", color: "#ec4899" },
-  { name: "Literature", slug: "literature", description: "Literary works and authors", color: "#14b8a6" },
-  { name: "Art & Design", slug: "art-design", description: "Artistic and design achievements", color: "#f97316" },
+  { name: "Movies & TV", slug: "movies-tv", description: "Film and television moments", color: "#1a3a3a" },
+  { name: "Music", slug: "music", description: "Musical milestones and moments", color: "#3a6a5a" },
+  { name: "Sports", slug: "sports", description: "Athletic achievements and history", color: "#5a6a3a" },
+  { name: "Technology", slug: "technology", description: "Tech breakthroughs and innovations", color: "#3a5a6a" },
+  { name: "Science & Nature", slug: "science-nature", description: "Scientific discoveries and natural wonders", color: "#4a3a6a" },
+  { name: "Politics & History", slug: "politics-history", description: "Political and historical events", color: "#6a4a3a" },
+  { name: "Literature", slug: "literature", description: "Literary works and authors", color: "#3a6a6a" },
+  { name: "Art & Design", slug: "art-design", description: "Artistic and design achievements", color: "#6a5a3a" },
 ];
 
 const eventsList = [
@@ -127,6 +128,19 @@ async function main() {
       })
       .onConflictDoNothing({ target: schema.events.id });
     console.log(`  Event: ${evt.month}/${evt.day} - ${evt.title}`);
+  }
+
+  for (const evt of additionalEvents) {
+    await db
+      .insert(schema.events)
+      .values({
+        month: evt.m,
+        day: evt.d,
+        year: evt.y,
+        title: evt.t,
+        categoryId: categoryMap.get(evt.c) ?? null,
+      })
+      .onConflictDoNothing({ target: schema.events.id });
   }
 
   console.log("Seed complete!");

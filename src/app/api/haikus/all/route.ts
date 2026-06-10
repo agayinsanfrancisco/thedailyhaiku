@@ -26,7 +26,9 @@ export async function GET() {
       createdAt: haikus.createdAt,
       categoryName: categories.name,
       eventTitle: events.title,
-      customEventTitle: haikus.customEventTitle,
+      isFiller: haikus.isFiller,
+      validationLink: haikus.validationLink,
+      eventHeadline: haikus.eventHeadline,
     })
     .from(haikus)
     .leftJoin(categories, eq(haikus.categoryId, categories.id))

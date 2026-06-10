@@ -22,6 +22,10 @@ async function getTodayHaiku(mmdd: string, year: number) {
       line1: haikus.line1, line2: haikus.line2, line3: haikus.line3,
       title: haikus.title, authorName: haikus.authorName,
       categoryName: categories.name, categoryColor: categories.color,
+      isFiller: haikus.isFiller,
+      eventHeadline: haikus.eventHeadline,
+      eventDescription: haikus.eventDescription,
+      eventSources: haikus.eventSources,
     })
     .from(haikus)
     .leftJoin(categories, eq(haikus.categoryId, categories.id))
@@ -102,16 +106,30 @@ export default async function HomePage() {
       <section className="pt-12 pb-10">
         {todayHaiku ? (
           <div className="animate-fade-up">
-            <div className="text-sm leading-relaxed space-y-1 mb-5">
-              <p className="text-[clamp(1.5rem,4vw,2.5rem)]">{todayHaiku.line1}</p>
-              <p className="text-[clamp(1.5rem,4vw,2.5rem)]">{todayHaiku.line2}</p>
-              <p className="text-[clamp(1.5rem,4vw,2.5rem)]">{todayHaiku.line3}</p>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-[var(--ink-muted)]">
-              {todayHaiku.authorName && <span>&mdash; {todayHaiku.authorName}</span>}
-              {todayHaiku.title && <span className="text-xs">&ldquo;{todayHaiku.title}&rdquo;</span>}
-              {todayHaiku.categoryName && <span className="text-xs text-[var(--accent)]">{todayHaiku.categoryName}</span>}
-            </div>
+            <Link href={`/haiku/${todayHaiku.id}`} className="block group">
+              <div className="font-serif text-[clamp(1.75rem,4vw,2.75rem)] leading-[1.3] space-y-1 mb-5">
+                <p>{todayHaiku.line1}</p>
+                <p>{todayHaiku.line2}</p>
+                <p>{todayHaiku.line3}</p>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-[var(--ink-muted)]">
+                {todayHaiku.authorName && <span>&mdash; {todayHaiku.authorName}</span>}
+                {todayHaiku.title && <span className="text-xs">&ldquo;{todayHaiku.title}&rdquo;</span>}
+                {todayHaiku.categoryName && <span className="text-xs text-[var(--accent)]">{todayHaiku.categoryName}</span>}
+              </div>
+            </Link>
+            {!todayHaiku.isFiller && todayHaiku.eventHeadline && (
+              <div className="mt-6 border-t border-[var(--rule)] pt-5">
+                <p className="font-serif text-base font-medium text-[var(--ink)] mb-1.5">
+                  {todayHaiku.eventHeadline}
+                </p>
+                {todayHaiku.eventDescription && (
+                  <p className="text-sm text-[var(--ink-muted)] leading-relaxed">
+                    {todayHaiku.eventDescription}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="animate-fade-up">
@@ -120,7 +138,7 @@ export default async function HomePage() {
             </p>
             <Link
               href="/write"
-              className="text-sm text-[var(--accent)] hover:text-[var(--ink)] transition-colors border-b border-[var(--accent-dim)] hover:border-[var(--ink)]"
+              className="text-sm text-[var(--accent)] hover:text-[var(--ink)] transition-colors border-b border-[var(--accent-light)] hover:border-[var(--ink)]"
             >
               Write today&rsquo;s haiku
             </Link>

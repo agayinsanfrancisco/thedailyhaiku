@@ -16,7 +16,10 @@ export default function WriteDatePage({
   const [events, setEvents] = useState<Array<{ id: number; month: number; day: number; year: number | null; title: string; description: string | null; categoryName: string | null; categoryColor: string | null }>>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
-  const [customTitle, setCustomTitle] = useState("");
+  const [validationLink, setValidationLink] = useState("");
+  const [validationStatus, setValidationStatus] = useState<"idle" | "validating" | "valid" | "invalid">("idle");
+  const [validatedData, setValidatedData] = useState<{ headline?: string; description?: string; sources?: string[] } | null>(null);
+  const [isFiller, setIsFiller] = useState(false);
   const [categories, setCategories] = useState<Array<{ id: number; name: string; slug: string; color: string }>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -36,6 +39,43 @@ export default function WriteDatePage({
     }
     loadData();
   }, [date]);
+
+  const handleValidate = async () => {
+    const event = events.find((e) => e.id === selectedEventId);
+    if (!event || !validationLink.trim()) return;
+
+    setValidationStatus("validating");
+    try {
+      const res = await fetch("/api/validate-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventTitle: event.title,
+          date,
+          link: validationLink.trim(),
+        }),
+      });
+      const result = await res.json();
+      if (result.valid) {
+        setValidationStatus("valid");
+        setValidatedData({
+          headline: result.headline,
+          description: result.description,
+          sources: result.sources,
+        });
+      } else {
+        setValidationStatus("invalid");
+      }
+    } catch {
+      setValidationStatus("invalid");
+    }
+  };
+
+  const handleChooseFiller = () => {
+    setIsFiller(true);
+    setSelectedEventId(null);
+    setShowBuilder(true);
+  };
 
   const handleSubmit = async (data: {
     line1: string;
@@ -61,7 +101,11 @@ export default function WriteDatePage({
           title: data.title,
           categoryId: data.categoryId,
           eventId: selectedEventId,
-          customEventTitle: customTitle || null,
+          isFiller,
+          validationLink: validationLink || null,
+          eventHeadline: validatedData?.headline ?? null,
+          eventDescription: validatedData?.description ?? null,
+          eventSources: validatedData?.sources ? JSON.stringify(validatedData.sources) : null,
           authorName: data.authorName,
           authorEmail: data.authorEmail,
         }),
@@ -87,11 +131,13 @@ export default function WriteDatePage({
     }
   };
 
+  const selectedEvent = events.find((e) => e.id === selectedEventId);
+
   return (
     <article className="max-w-2xl mx-auto px-6 pt-16">
       <button
         onClick={() => router.push("/write")}
-        className="text-xs text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors mb-6 font-[system-ui]"
+        className="text-xs text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors mb-6"
       >
         &larr; Back to calendar
       </button>
@@ -103,42 +149,58 @@ export default function WriteDatePage({
             events={events}
             loading={eventsLoading}
             selectedEventId={selectedEventId}
-            onSelectEvent={setSelectedEventId}
-            customTitle={customTitle}
-            onCustomTitleChange={setCustomTitle}
+            onSelectEvent={(id) => {
+              setSelectedEventId(id);
+              setValidationStatus("idle");
+              setValidatedData(null);
+              setIsFiller(false);
+            }}
+            validationLink={validationLink}
+            onValidationLinkChange={setValidationLink}
+            validationStatus={validationStatus}
+            onValidate={handleValidate}
+            onChooseFiller={handleChooseFiller}
           />
           <button
             onClick={() => setShowBuilder(true)}
-            disabled={selectedEventId === null && !customTitle.trim()}
+            disabled={validationStatus !== "valid"}
             className={`
-              w-full py-3 text-sm font-[system-ui] tracking-wider uppercase border-2 transition-colors
-              ${selectedEventId !== null || customTitle.trim()
-                ? "border-[var(--ink)] text-[var(--ink)] hover:bg-[var(--ink)] hover:text-[var(--paper)]"
-                : "border-[var(--accent-dim)] text-[var(--accent-dim)] cursor-not-allowed"
+              w-full py-3 text-sm tracking-wider uppercase border-2 transition-colors
+              ${validationStatus === "valid"
+                ? "border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--paper)]"
+                : "border-[var(--rule)] text-[var(--ink-muted)] cursor-not-allowed"
               }
             `}
           >
-            Continue to Haiku Builder
+            {validationStatus === "idle" && "Select an event and validate it"}
+            {validationStatus === "invalid" && "Provide a valid source link"}
+            {validationStatus === "validating" && "Validating..."}
+            {validationStatus === "valid" && "Continue to Haiku Builder"}
           </button>
         </div>
       ) : (
         <div>
-          <div className="border border-[var(--accent)] bg-[var(--surface)] px-4 py-3 mb-6 flex items-center justify-between">
-            <span className="text-sm text-[var(--ink)]">
-              Inspired by:{" "}
-              <strong className="text-[var(--accent)]">
-                {selectedEventId
-                  ? events.find((e) => e.id === selectedEventId)?.title
-                  : customTitle}
-              </strong>
-            </span>
-            <button
-              onClick={() => setShowBuilder(false)}
-              className="text-xs text-[var(--ink-muted)] underline hover:text-[var(--ink)]"
-            >
-              Change
-            </button>
-          </div>
+          {!isFiller && selectedEvent && (
+            <div className="border border-[var(--accent)] bg-[var(--accent-light)] px-4 py-3 mb-6 flex items-center justify-between">
+              <span className="text-sm text-[var(--ink)]">
+                Inspired by:{" "}
+                <strong className="text-[var(--accent)]">{selectedEvent.title}</strong>
+              </span>
+              <button
+                onClick={() => setShowBuilder(false)}
+                className="text-xs text-[var(--ink-muted)] underline hover:text-[var(--ink)]"
+              >
+                Change
+              </button>
+            </div>
+          )}
+          {isFiller && (
+            <div className="border border-[var(--rule)] bg-[var(--surface)] px-4 py-3 mb-6">
+              <span className="text-sm text-[var(--ink-muted)]">
+                Writing a general haiku (no specific inspiration)
+              </span>
+            </div>
+          )}
 
           <HaikuBuilder
             categories={categories}

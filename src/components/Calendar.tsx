@@ -86,19 +86,19 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={prevMonth}
-          className="p-2 hover:bg-[var(--surface)] text-[var(--ink-muted)]"
+          className="p-2 hover:bg-[var(--surface)] text-[var(--ink-muted)] transition-colors"
           aria-label="Previous month"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h2 className="text-sm font-medium">
+        <h2 className="text-sm font-medium tracking-tight">
           {MONTHS[currentMonth]} {currentYear}
         </h2>
         <button
           onClick={nextMonth}
-          className="p-2 hover:bg-[var(--surface)] text-[var(--ink-muted)]"
+          className="p-2 hover:bg-[var(--surface)] text-[var(--ink-muted)] transition-colors"
           aria-label="Next month"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,7 +109,7 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
 
       <div className="grid grid-cols-7 gap-px mb-px">
         {DAYS.map((day) => (
-          <div key={day} className="text-center text-xs text-[var(--ink-muted)] py-2">
+          <div key={day} className="text-center text-xs text-[var(--ink-muted)] py-2 font-medium tracking-wider uppercase">
             {day}
           </div>
         ))}
@@ -118,7 +118,7 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
       {loading ? (
         <div className="grid grid-cols-7 gap-px">
           {Array.from({ length: 35 }).map((_, i) => (
-            <div key={i} className="aspect-square bg-[var(--surface)]" />
+            <div key={i} className="aspect-square bg-[var(--surface)] animate-pulse" />
           ))}
         </div>
       ) : (
@@ -137,16 +137,19 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
                 onClick={() => handleDateClick(day)}
                 disabled={!available}
                 className={`
-                  aspect-square text-sm flex items-center justify-center transition-colors font-medium
+                  aspect-square text-sm flex flex-col items-center justify-center transition-all relative
                   ${available
-                    ? "bg-[var(--green-open-bg)] text-[var(--green-open)] hover:brightness-95 cursor-pointer"
-                    : "bg-[var(--red-taken-bg)] text-[var(--red-taken)] cursor-not-allowed"
+                    ? "bg-[var(--open-bg)] text-[var(--open)] hover:bg-[var(--surface)] cursor-pointer"
+                    : "text-[var(--taken)] cursor-not-allowed"
                   }
                   ${isToday ? "ring-2 ring-[var(--accent)] ring-inset" : ""}
                 `}
-                title={available ? "Open" : "Has a haiku"}
+                title={available ? "Available" : "Has a haiku"}
               >
-                {day}
+                <span className={available ? "" : "opacity-40"}>{day}</span>
+                {!available && (
+                  <span className="w-1 h-1 rounded-full bg-[var(--taken)] absolute bottom-2" />
+                )}
               </button>
             );
           })}
@@ -155,11 +158,11 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
 
       <div className="flex items-center justify-center gap-6 mt-6 text-xs text-[var(--ink-muted)]">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-[var(--green-open-bg)] border border-[var(--green-open)]" />
-          <span>Open</span>
+          <div className="w-3 h-3 bg-[var(--open-bg)]" />
+          <span>Available</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-[var(--red-taken-bg)] border border-[var(--red-taken)]" />
+          <div className="w-1 h-1 rounded-full bg-[var(--taken)]" />
           <span>Has haiku</span>
         </div>
       </div>

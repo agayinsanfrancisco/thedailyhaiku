@@ -7,7 +7,7 @@ import { and, eq, desc } from "drizzle-orm";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { date, line1, line2, line3, title, categoryId, eventId, customEventTitle, authorName, authorEmail } = body;
+    const { date, line1, line2, line3, title, categoryId, eventId, isFiller, validationLink, eventHeadline, eventDescription, eventSources, authorName, authorEmail } = body;
 
     if (!date || !line1 || !line2 || !line3) {
       return NextResponse.json({ error: "Missing required fields (date, line1, line2, line3)" }, { status: 400 });
@@ -50,7 +50,11 @@ export async function POST(request: NextRequest) {
       title: title ?? null,
       categoryId: categoryId ? parseInt(categoryId) : null,
       eventId: eventId ? parseInt(eventId) : null,
-      customEventTitle: customEventTitle ?? null,
+      isFiller: isFiller ? "true" : "false",
+      validationLink: validationLink ?? null,
+      eventHeadline: eventHeadline ?? null,
+      eventDescription: eventDescription ?? null,
+      eventSources: eventSources ?? null,
       authorName: authorName ?? null,
       authorEmail: authorEmail ?? null,
       status: "pending",
@@ -77,7 +81,10 @@ export async function GET() {
       categoryName: categories.name,
       categoryColor: categories.color,
       eventTitle: events.title,
-      customEventTitle: haikus.customEventTitle,
+      isFiller: haikus.isFiller,
+      eventHeadline: haikus.eventHeadline,
+      eventDescription: haikus.eventDescription,
+      eventSources: haikus.eventSources,
     })
     .from(haikus)
     .leftJoin(categories, eq(haikus.categoryId, categories.id))
