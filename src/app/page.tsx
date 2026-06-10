@@ -2,11 +2,21 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { haikus, categories } from "@/lib/db/schema";
+import { haikus, categories, events } from "@/lib/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
+import StreakCounter from "@/components/StreakCounter";
+import SurpriseMeButton from "@/components/SurpriseMeButton";
 
 function getToday() {
   const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return { mmdd: `${month}-${day}`, year: now.getFullYear(), month, day };
+}
+
+function getYesterday() {
+  const now = new Date();
+  now.setDate(now.getDate() - 1);
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return { mmdd: `${month}-${day}`, year: now.getFullYear(), month, day };
@@ -27,13 +37,36 @@ async function getTodayHaiku(mmdd: string, year: number) {
       isFiller: haikus.isFiller,
       eventHeadline: haikus.eventHeadline,
       eventDescription: haikus.eventDescription,
-      eventSources: haikus.eventSources,
     })
     .from(haikus)
     .leftJoin(categories, eq(haikus.categoryId, categories.id))
     .where(and(eq(haikus.date, mmdd), eq(haikus.year, year), eq(haikus.status, "approved")))
     .limit(1);
   return result[0] ?? null;
+}
+
+async function getYesterdayHaiku(mmdd: string, year: number) {
+  const result = await db
+    .select({ id: haikus.id })
+    .from(haikus)
+    .where(and(eq(haikus.date, mmdd), eq(haikus.year, year), eq(haikus.status, "approved")))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+async function getTodayEvents(month: number, day: number) {
+  return db
+    .select({
+      id: events.id,
+      title: events.title,
+      year: events.year,
+      categoryName: categories.name,
+      categorySlug: categories.slug,
+    })
+    .from(events)
+    .leftJoin(categories, eq(events.categoryId, categories.id))
+    .where(and(eq(events.month, month), eq(events.day, day)))
+    .limit(5);
 }
 
 async function getRecentHaikus() {
@@ -69,9 +102,12 @@ async function getCategoryStats() {
 }
 
 export default async function HomePage() {
-  const { mmdd, year } = getToday();
-  const [todayHaiku, recentHaikus, categoryStats] = await Promise.all([
+  const { mmdd, year, month, day } = getToday();
+  const yesterday = getYesterday();
+  const [todayHaiku, yesterdayHaiku, todayEvents, recentHaikus, categoryStats] = await Promise.all([
     getTodayHaiku(mmdd, year),
+    getYesterdayHaiku(yesterday.mmdd, yesterday.year),
+    getTodayEvents(Number(month), Number(day)),
     getRecentHaikus(),
     getCategoryStats(),
   ]);
@@ -79,9 +115,31 @@ export default async function HomePage() {
   return (
     <div>
       <div className="max-w-5xl mx-auto px-6">
-        <section className="pt-10 pb-4">
+        <section className="pt-10 pb-4 flex items-center justify-between">
           <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase">{formatDate(mmdd)}</p>
+          <StreakCounter />
         </section>
+
+        {todayEvents.length > 0 && !todayHaiku && (
+          <section className="pb-6 animate-fade-up">
+            <p className="text-[11px] text-[var(--accent)] tracking-widest uppercase mb-2">On this day</p>
+            <div className="flex flex-wrap gap-2">
+              {todayEvents.slice(0, 3).map((evt) => (
+                <Link
+                  key={evt.id}
+                  href="/write"
+                  className="group"
+                >
+                  <span className="inline-block text-xs text-[var(--ink-muted)] border border-[var(--rule)] px-3 py-1.5 hover:border-[var(--accent)] hover:text-[var(--ink)] transition-colors">
+                    {evt.year && <span className="text-[var(--accent)]">{evt.year}</span>}
+                    {evt.year && <span> \u2014 </span>}
+                    {evt.title}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {todayHaiku ? (
           <>
@@ -127,7 +185,7 @@ export default async function HomePage() {
                 </div>
               )}
 
-              <div className="flex items-center gap-4 animate-fade-up">
+              <div className="flex items-center gap-5 animate-fade-up">
                 <Link
                   href={`/haiku/${todayHaiku.id}`}
                   className="text-xs text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors underline underline-offset-2"
@@ -140,28 +198,47 @@ export default async function HomePage() {
                 >
                   Write yours
                 </Link>
+                <SurpriseMeButton />
               </div>
             </section>
           </>
         ) : (
-          <section className="pt-12 pb-16 animate-fade-up">
-            <div className="kinetic-stack mb-8">
+          <section className="pt-8 pb-10 animate-fade-up">
+            <div className="kinetic-stack mb-6">
               <p className="kinetic-word">today&rsquo;s</p>
               <div className="flex gap-3 items-baseline flex-wrap">
                 <p className="kinetic-word-outline">empty</p>
                 <p className="kinetic-word">page</p>
               </div>
             </div>
-            <p className="text-sm text-[var(--ink-muted)] mb-6 max-w-xs">
-              No haiku for today yet. Be the first to write one.
-            </p>
-            <Link
-              href="/write"
-              className="inline-block text-sm text-[var(--ink)] border-2 border-[var(--ink)] px-5 py-2.5 hover:bg-[var(--ink)] hover:text-[var(--paper)] transition-colors"
-            >
-              Write today&rsquo;s haiku
-            </Link>
+
+            {todayEvents.length > 0 && (
+              <p className="text-sm text-[var(--ink-muted)] mb-2 max-w-md">
+                {todayEvents.length} event{todayEvents.length > 1 ? "s" : ""} happened on this day. Pick one and write the haiku.
+              </p>
+            )}
+
+            <div className="flex items-center gap-4 mt-6">
+              <Link
+                href="/write"
+                className="inline-block text-sm text-[var(--ink)] border-2 border-[var(--ink)] px-5 py-2.5 hover:bg-[var(--ink)] hover:text-[var(--paper)] transition-colors"
+              >
+                Write today&rsquo;s haiku
+              </Link>
+              <SurpriseMeButton />
+            </div>
           </section>
+        )}
+
+        {yesterdayHaiku && (
+          <div className="pb-6 animate-fade-up">
+            <Link
+              href={`/haiku/${yesterdayHaiku.id}`}
+              className="text-xs text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors"
+            >
+              &larr; Yesterday&rsquo;s haiku
+            </Link>
+          </div>
         )}
       </div>
 
@@ -187,7 +264,15 @@ export default async function HomePage() {
       {recentHaikus.length > 0 && (
         <div className="max-w-5xl mx-auto px-6 pt-10 pb-12">
           <div className="section-rule" />
-          <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase mb-6">Recent haikus</p>
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase">Recent haikus</p>
+            <Link
+              href="/browse"
+              className="text-xs text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors"
+            >
+              Browse all &rarr;
+            </Link>
+          </div>
           <div className="columns-1 sm:columns-2 gap-8">
             {recentHaikus.map((haiku, i) => (
               <Link

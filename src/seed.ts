@@ -18,6 +18,7 @@ const categoriesList = [
   { name: "Politics & History", slug: "politics-history", description: "Political and historical events", color: "#6a4a3a" },
   { name: "Literature", slug: "literature", description: "Literary works and authors", color: "#3a6a6a" },
   { name: "Art & Design", slug: "art-design", description: "Artistic and design achievements", color: "#6a5a3a" },
+  { name: "LGBTQIA+", slug: "lgbtqia", description: "Queer history and culture", color: "#8a4a6a" },
 ];
 
 const eventsList = [

@@ -47,15 +47,18 @@ export default function EventSelector({
       <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase mb-2">
         {displayDate}
       </p>
-      <h2 className="text-xl mb-6">Choose Your Inspiration</h2>
+      <h2 className="text-xl mb-2">What happened on this day?</h2>
+      <p className="text-sm text-[var(--ink-muted)] mb-6">
+        Pick an event as inspiration for your haiku, or skip and write freely.
+      </p>
 
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 bg-[var(--surface)] animate-pulse" />
+            <div key={i} className="h-20 bg-[var(--surface)] animate-pulse" />
           ))}
         </div>
-      ) : (
+      ) : events.length > 0 ? (
         <div className="space-y-2 mb-6">
           {events.map((event) => (
             <button
@@ -68,7 +71,7 @@ export default function EventSelector({
                 w-full text-left p-4 border transition-all
                 ${selectedEventId === event.id
                   ? "border-[var(--accent)] bg-[var(--accent-light)]"
-                  : "border-[var(--rule)] hover:border-[var(--ink-muted)]"
+                  : "border-[var(--rule)] hover:border-[var(--ink-muted)] hover:bg-[var(--surface)]"
                 }
               `}
             >
@@ -78,18 +81,25 @@ export default function EventSelector({
                   {event.description && (
                     <p className="text-xs text-[var(--ink-muted)] mt-0.5 leading-relaxed">{event.description}</p>
                   )}
-                  {event.year && (
-                    <p className="text-[11px] text-[var(--accent-muted)] mt-0.5">{event.year}</p>
-                  )}
+                  <div className="flex items-center gap-2 mt-1">
+                    {event.year && (
+                      <span className="text-[11px] text-[var(--accent-muted)]">{event.year}</span>
+                    )}
+                    {event.categoryName && (
+                      <span className="text-[10px] text-[var(--accent)]">{event.categoryName}</span>
+                    )}
+                  </div>
                 </div>
-                {event.categoryName && (
-                  <span className="text-[10px] text-[var(--accent)] shrink-0 mt-0.5">
-                    {event.categoryName}
-                  </span>
+                {selectedEventId === event.id && (
+                  <span className="text-[var(--accent)] shrink-0 mt-0.5 text-sm">Selected</span>
                 )}
               </div>
             </button>
           ))}
+        </div>
+      ) : (
+        <div className="border border-[var(--rule)] p-6 mb-6 text-center">
+          <p className="text-sm text-[var(--ink-muted)]">No events found for this date.</p>
         </div>
       )}
 
