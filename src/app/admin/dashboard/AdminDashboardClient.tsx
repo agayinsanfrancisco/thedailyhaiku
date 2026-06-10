@@ -37,8 +37,8 @@ export default function AdminDashboardClient() {
       }
       const data = await res.json();
       setHaikus(data.haikus ?? []);
-    } catch (e) {
-      console.error("Failed to fetch haikus:", e);
+    } catch {
+      // ignore
     } finally {
       setLoading(false);
     }
@@ -82,22 +82,27 @@ export default function AdminDashboardClient() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-6 pt-16">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <div className="flex gap-2 text-sm">
+        <div>
+          <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase font-[system-ui] mb-1">
+            Admin
+          </p>
+          <h1 className="text-xl font-serif">Dashboard</h1>
+        </div>
+        <div className="flex gap-px text-xs font-[system-ui]">
           {(["all", "pending", "edits_requested", "approved", "rejected"] as const).map((key) => (
             <button
               key={key}
               onClick={() => setFilter(key === "all" ? "all" : key)}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
+              className={`px-3 py-1.5 border transition-colors ${
                 filter === key
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "border-[var(--ink)] text-[var(--ink)] bg-[var(--surface)]"
+                  : "border-[var(--rule)] text-[var(--ink-muted)] hover:border-[var(--ink-muted)]"
               }`}
             >
               {key === "all" ? "All" : key.replace("_", " ")}
-              <span className="ml-1 text-xs opacity-75">({counts[key]})</span>
+              <span className="ml-1">({counts[key]})</span>
             </button>
           ))}
         </div>
@@ -106,13 +111,13 @@ export default function AdminDashboardClient() {
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-40 bg-gray-100 rounded-xl animate-pulse" />
+            <div key={i} className="h-32 border border-[var(--rule)] bg-[var(--surface)]" />
           ))}
         </div>
       ) : filteredHaikus.length === 0 ? (
-        <div className="text-center py-16 text-gray-500">
-          <p className="text-lg">No haikus yet</p>
-          <p className="text-sm mt-1">Haikus submitted by users will appear here.</p>
+        <div className="text-center py-16 text-[var(--ink-muted)]">
+          <p className="font-serif text-lg">No haikus yet</p>
+          <p className="text-sm mt-1 font-[system-ui]">Haikus submitted by users will appear here.</p>
         </div>
       ) : (
         <div className="space-y-4">

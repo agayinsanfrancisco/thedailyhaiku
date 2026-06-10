@@ -37,7 +37,7 @@ export default function RootLayout({
               <Link href="/write" className="text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors">
                 Write
               </Link>
-              <Link href="/" className="text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors">
+              <Link href="/browse" className="text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors">
                 Browse
               </Link>
               <Link href="/admin" className="text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors text-xs">

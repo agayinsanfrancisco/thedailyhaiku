@@ -88,15 +88,12 @@ export default function WriteDatePage({
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <article className="max-w-2xl mx-auto px-6 pt-16">
       <button
         onClick={() => router.push("/write")}
-        className="text-sm text-gray-500 hover:text-gray-700 mb-4 flex items-center gap-1"
+        className="text-xs text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors mb-6 font-[system-ui]"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-        Back to calendar
+        &larr; Back to calendar
       </button>
 
       {!showBuilder ? (
@@ -114,10 +111,10 @@ export default function WriteDatePage({
             onClick={() => setShowBuilder(true)}
             disabled={selectedEventId === null && !customTitle.trim()}
             className={`
-              w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200
+              w-full py-3 text-sm font-[system-ui] tracking-wider uppercase border-2 transition-colors
               ${selectedEventId !== null || customTitle.trim()
-                ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                ? "border-[var(--ink)] text-[var(--ink)] hover:bg-[var(--ink)] hover:text-[var(--paper)]"
+                : "border-[var(--accent-dim)] text-[var(--accent-dim)] cursor-not-allowed"
               }
             `}
           >
@@ -126,10 +123,10 @@ export default function WriteDatePage({
         </div>
       ) : (
         <div>
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6 text-sm text-green-700 flex items-center justify-between">
-            <span>
+          <div className="border border-[var(--accent)] bg-[var(--surface)] px-4 py-3 mb-6 flex items-center justify-between">
+            <span className="text-sm text-[var(--ink)]">
               Inspired by:{" "}
-              <strong>
+              <strong className="text-[var(--accent)]">
                 {selectedEventId
                   ? events.find((e) => e.id === selectedEventId)?.title
                   : customTitle}
@@ -137,7 +134,7 @@ export default function WriteDatePage({
             </span>
             <button
               onClick={() => setShowBuilder(false)}
-              className="text-green-600 underline hover:text-green-800"
+              className="text-xs text-[var(--ink-muted)] underline hover:text-[var(--ink)]"
             >
               Change
             </button>
@@ -151,6 +148,6 @@ export default function WriteDatePage({
           />
         </div>
       )}
-    </div>
+    </article>
   );
 }

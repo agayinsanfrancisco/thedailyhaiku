@@ -28,8 +28,8 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
       const res = await fetch(`/api/dates?year=${currentYear}`);
       const data = await res.json();
       setTakenDates(data.takenDates ?? {});
-    } catch (e) {
-      console.error("Failed to fetch dates:", e);
+    } catch {
+      // ignore
     } finally {
       setLoading(false);
     }
@@ -82,47 +82,47 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
   const isCurrentMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className="max-w-sm mx-auto">
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={prevMonth}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+          className="p-2 hover:bg-[var(--surface)] text-[var(--ink-muted)]"
           aria-label="Previous month"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h2 className="text-xl font-semibold text-gray-800">
+        <h2 className="text-base font-serif text-[var(--ink)]">
           {MONTHS[currentMonth]} {currentYear}
         </h2>
         <button
           onClick={nextMonth}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+          className="p-2 hover:bg-[var(--surface)] text-[var(--ink-muted)]"
           aria-label="Next month"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
           </svg>
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 gap-px mb-px">
         {DAYS.map((day) => (
-          <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
+          <div key={day} className="text-center text-xs font-[system-ui] text-[var(--ink-muted)] py-2">
             {day}
           </div>
         ))}
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-px">
           {Array.from({ length: 35 }).map((_, i) => (
-            <div key={i} className="aspect-square rounded-lg bg-gray-100 animate-pulse" />
+            <div key={i} className="aspect-square bg-[var(--surface)]" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-px">
           {cells.map((day, i) => {
             if (day === null) {
               return <div key={`empty-${i}`} className="aspect-square" />;
@@ -137,15 +137,15 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
                 onClick={() => handleDateClick(day)}
                 disabled={!available}
                 className={`
-                  aspect-square rounded-lg text-sm font-medium flex items-center justify-center
-                  transition-all duration-150
+                  aspect-square text-sm font-[system-ui] flex items-center justify-center
+                  transition-colors
                   ${available
-                    ? "bg-green-100 text-green-800 hover:bg-green-200 hover:shadow-md cursor-pointer active:scale-95"
-                    : "bg-red-100 text-red-400 cursor-not-allowed opacity-70"
+                    ? "text-[var(--ink)] hover:bg-[var(--surface)] cursor-pointer"
+                    : "text-[var(--accent-dim)] cursor-not-allowed line-through"
                   }
-                  ${isToday ? "ring-2 ring-indigo-500 ring-offset-2" : ""}
+                  ${isToday ? "ring-1 ring-[var(--accent)] ring-inset" : ""}
                 `}
-                title={available ? "Open — click to write a haiku" : "This date already has a haiku"}
+                title={available ? "Open" : "Has a haiku"}
               >
                 {day}
               </button>
@@ -154,13 +154,13 @@ export default function Calendar({ year: initialYear }: CalendarProps) {
         </div>
       )}
 
-      <div className="flex items-center justify-center gap-6 mt-6 text-sm text-gray-600">
+      <div className="flex items-center justify-center gap-6 mt-6 text-xs text-[var(--ink-muted)] font-[system-ui]">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-green-100 border border-green-300" />
+          <div className="w-3 h-3 bg-[var(--surface)] border border-[var(--rule)]" />
           <span>Open</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-red-100 border border-red-300" />
+          <div className="w-3 h-3 bg-[var(--accent-dim)] border border-[var(--accent-dim)]" />
           <span>Has haiku</span>
         </div>
       </div>

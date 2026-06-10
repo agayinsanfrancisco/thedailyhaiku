@@ -35,34 +35,35 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="max-w-sm mx-auto mt-16">
-      <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
-        Admin Login
-      </h1>
+    <article className="max-w-sm mx-auto px-6 pt-24">
+      <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase font-[system-ui] mb-2 text-center">
+        Admin
+      </p>
+      <h1 className="text-xl font-serif text-center mb-8">Sign In</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-1">
             Password
           </label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-[var(--rule)] bg-transparent text-sm focus:outline-none focus:border-[var(--ink)] transition-colors"
             autoFocus
           />
         </div>
         {error && (
-          <div className="text-red-600 text-sm text-center">{error}</div>
+          <p className="text-sm text-[var(--accent)] text-center">{error}</p>
         )}
         <button
           type="submit"
           disabled={loading || !password}
-          className="w-full py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="w-full py-2 text-sm font-[system-ui] tracking-wider uppercase border-2 border-[var(--ink)] text-[var(--ink)] hover:bg-[var(--ink)] hover:text-[var(--paper)] transition-colors disabled:border-[var(--accent-dim)] disabled:text-[var(--accent-dim)] disabled:cursor-not-allowed"
         >
           {loading ? "Verifying..." : "Sign In"}
         </button>
       </form>
-    </div>
+    </article>
   );
 }

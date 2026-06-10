@@ -2,16 +2,17 @@ import Calendar from "@/components/Calendar";
 
 export default function WritePage() {
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Pick a Date
-        </h1>
-        <p className="text-gray-600">
-          Green dates are open for new haikus. Pick one and get inspired!
+    <article className="max-w-2xl mx-auto px-6 pt-16">
+      <div className="mb-10">
+        <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase font-[system-ui] mb-2">
+          Write a Haiku
+        </p>
+        <h1 className="text-2xl font-serif">Pick a Date</h1>
+        <p className="text-sm text-[var(--ink-muted)] mt-2">
+          Green dates are open for new haikus.
         </p>
       </div>
       <Calendar />
-    </div>
+    </article>
   );
 }

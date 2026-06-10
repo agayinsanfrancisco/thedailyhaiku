@@ -66,40 +66,25 @@ export default function HaikuBuilder({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
+      <div className="border border-[var(--rule)] p-6 bg-[var(--surface)]">
         <div className="text-center mb-6">
-          <div className="text-xs text-indigo-500 font-medium uppercase tracking-wide mb-1">
+          <div className="text-xs text-[var(--ink-muted)] font-[system-ui] tracking-widest uppercase mb-3">
             Your Haiku
           </div>
-          <div className="text-2xl font-serif italic text-gray-700 leading-relaxed">
-            <span className={c1 === 5 ? "text-gray-800" : c1 > 5 ? "text-red-500" : "text-yellow-600"}>
-              {line1 || "_____"}
-            </span>
-            <br />
-            <span className={c2 === 7 ? "text-gray-800" : c2 > 7 ? "text-red-500" : "text-yellow-600"}>
-              {line2 || "___________"}
-            </span>
-            <br />
-            <span className={c3 === 5 ? "text-gray-800" : c3 > 5 ? "text-red-500" : "text-yellow-600"}>
-              {line3 || "_____"}
-            </span>
-          </div>
-          <div className="flex justify-center gap-3 mt-3 text-sm">
-            <span className={c1 === 5 ? "text-green-600 font-bold" : "text-red-500"}>
-              {c1} syl
-            </span>
-            <span className="text-gray-300">/</span>
-            <span className={c2 === 7 ? "text-green-600 font-bold" : "text-red-500"}>
-              {c2} syl
-            </span>
-            <span className="text-gray-300">/</span>
-            <span className={c3 === 5 ? "text-green-600 font-bold" : "text-red-500"}>
-              {c3} syl
-            </span>
+          <div className="text-xl font-serif leading-relaxed space-y-1">
+            <p className={c1 === 5 ? "text-[var(--ink)]" : c1 > 5 ? "text-[var(--accent)]" : "text-[var(--ink-muted)]"}>
+              {line1 || "______"}
+            </p>
+            <p className={c2 === 7 ? "text-[var(--ink)]" : c2 > 7 ? "text-[var(--accent)]" : "text-[var(--ink-muted)]"}>
+              {line2 || "__________"}
+            </p>
+            <p className={c3 === 5 ? "text-[var(--ink)]" : c3 > 5 ? "text-[var(--accent)]" : "text-[var(--ink-muted)]"}>
+              {line3 || "______"}
+            </p>
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           <SyllableCounter
             line={line1}
             target={5}
@@ -123,21 +108,21 @@ export default function HaikuBuilder({
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Title (optional)
+          <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-1">
+            Title <span className="text-[var(--accent-dim)]">(optional)</span>
           </label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="A name for your haiku"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-[var(--rule)] bg-transparent text-sm focus:outline-none focus:border-[var(--ink)] transition-colors placeholder:text-[var(--accent-dim)]"
             maxLength={100}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-2">
             Category
           </label>
           <div className="flex flex-wrap gap-2">
@@ -147,13 +132,12 @@ export default function HaikuBuilder({
                 type="button"
                 onClick={() => setCategoryId(categoryId === cat.id ? null : cat.id)}
                 className={`
-                  px-3 py-1.5 rounded-full text-sm font-medium transition-all
+                  px-3 py-1 text-xs font-[system-ui] border transition-colors
                   ${categoryId === cat.id
-                    ? "ring-2 ring-offset-2 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--surface)]"
+                    : "border-[var(--rule)] text-[var(--ink-muted)] hover:border-[var(--ink-muted)]"
                   }
                 `}
-                style={categoryId === cat.id ? { backgroundColor: cat.color } : undefined}
               >
                 {cat.name}
               </button>
@@ -161,30 +145,30 @@ export default function HaikuBuilder({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Your name (optional)
+            <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-1">
+              Your name <span className="text-[var(--accent-dim)]">(optional)</span>
             </label>
             <input
               type="text"
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
               placeholder="Anonymous"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-[var(--rule)] bg-transparent text-sm focus:outline-none focus:border-[var(--ink)] transition-colors placeholder:text-[var(--accent-dim)]"
               maxLength={50}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email (optional)
+            <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-1">
+              Email <span className="text-[var(--accent-dim)]">(optional)</span>
             </label>
             <input
               type="email"
               value={authorEmail}
               onChange={(e) => setAuthorEmail(e.target.value)}
               placeholder="For edit requests"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-[var(--rule)] bg-transparent text-sm focus:outline-none focus:border-[var(--ink)] transition-colors placeholder:text-[var(--accent-dim)]"
               maxLength={100}
             />
           </div>
@@ -192,7 +176,7 @@ export default function HaikuBuilder({
       </div>
 
       {submitError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div className="border border-[var(--accent)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--accent)]">
           {submitError}
         </div>
       )}
@@ -201,23 +185,15 @@ export default function HaikuBuilder({
         type="submit"
         disabled={!isValid || isSubmitting}
         className={`
-          w-full py-3 px-6 rounded-xl font-semibold text-lg transition-all duration-200
+          w-full py-3 text-sm font-[system-ui] tracking-wider uppercase border-2 transition-colors
           ${isValid && !isSubmitting
-            ? "bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98] shadow-lg shadow-indigo-200"
-            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            ? "border-[var(--ink)] text-[var(--ink)] hover:bg-[var(--ink)] hover:text-[var(--paper)]"
+            : "border-[var(--accent-dim)] text-[var(--accent-dim)] cursor-not-allowed"
           }
         `}
       >
-        {isSubmitting ? "Submitting..." : "Submit Haiku for Review"}
+        {isSubmitting ? "Submitting..." : "Submit for Review"}
       </button>
-
-      {!isValid && line1.trim().length + line2.trim().length + line3.trim().length > 0 && (
-        <p className="text-center text-sm text-amber-600">
-          {c1 !== 5 ? `Line 1 needs to be 5 syllables (currently ${c1}). ` : ""}
-          {c2 !== 7 ? `Line 2 needs to be 7 syllables (currently ${c2}). ` : ""}
-          {c3 !== 5 ? `Line 3 needs to be 5 syllables (currently ${c3}).` : ""}
-        </p>
-      )}
     </form>
   );
 }

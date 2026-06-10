@@ -38,49 +38,49 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
   const dateLabel = `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][parseInt(m) - 1]} ${parseInt(d)}`;
 
   const statusColors: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-800",
-    approved: "bg-green-100 text-green-800",
-    rejected: "bg-red-100 text-red-800",
-    edits_requested: "bg-blue-100 text-blue-800",
+    pending: "border-[var(--ink-muted)] text-[var(--ink-muted)]",
+    approved: "border-[var(--accent)] text-[var(--accent)]",
+    rejected: "border-[var(--accent-dim)] text-[var(--ink-muted)]",
+    edits_requested: "border-[var(--ink)] text-[var(--ink)]",
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div className="border border-[var(--rule)] p-5 bg-[var(--surface)]">
       <div className="flex items-start justify-between mb-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-500">{dateLabel}</span>
+            <span className="text-xs font-[system-ui] text-[var(--ink-muted)]">{dateLabel}</span>
             {haiku.title && (
-              <span className="text-sm font-semibold text-gray-800">&mdash; {haiku.title}</span>
+              <span className="text-sm font-serif text-[var(--ink)]">&mdash; {haiku.title}</span>
             )}
           </div>
         </div>
-        <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusColors[haiku.status] ?? "bg-gray-100 text-gray-800"}`}>
+        <span className={`text-[10px] font-[system-ui] tracking-wider uppercase border px-2 py-0.5 ${statusColors[haiku.status] ?? "border-[var(--rule)] text-[var(--ink-muted)]"}`}>
           {haiku.status.replace("_", " ")}
         </span>
       </div>
 
-      <div className="font-serif italic text-gray-700 mb-3 leading-relaxed">
+      <div className="font-serif text-[15px] text-[var(--ink)] mb-3 leading-relaxed">
         <p>{haiku.line1}</p>
         <p>{haiku.line2}</p>
         <p>{haiku.line3}</p>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-3 text-xs text-gray-500">
+      <div className="flex flex-wrap gap-2 mb-3 text-xs text-[var(--ink-muted)] font-[system-ui]">
         {haiku.authorName && <span>By {haiku.authorName}</span>}
         {haiku.categoryName && (
-          <span className="px-2 py-0.5 bg-gray-100 rounded-full">{haiku.categoryName}</span>
+          <span className="text-[var(--accent)]">{haiku.categoryName}</span>
         )}
         {haiku.eventTitle && (
-          <span className="px-2 py-0.5 bg-gray-100 rounded-full" title={haiku.eventTitle}>
+          <span className="text-[var(--ink-muted)] truncate max-w-[200px]" title={haiku.eventTitle}>
             {haiku.eventTitle.length > 40 ? haiku.eventTitle.slice(0, 40) + "..." : haiku.eventTitle}
           </span>
         )}
       </div>
 
       {haiku.adminNotes && (
-        <div className="bg-gray-50 rounded-lg p-3 mb-3 text-sm text-gray-600 border border-gray-100">
-          <span className="font-medium text-gray-700">Notes: </span>
+        <div className="border border-[var(--rule)] p-3 mb-3 text-sm text-[var(--ink-muted)]">
+          <span className="font-[system-ui] text-[var(--ink)]">Notes: </span>
           {haiku.adminNotes}
         </div>
       )}
@@ -88,7 +88,7 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
       <div className="space-y-2">
         <button
           onClick={() => setNotesOpen(!notesOpen)}
-          className="text-xs text-gray-500 hover:text-gray-700 underline"
+          className="text-xs text-[var(--ink-muted)] hover:text-[var(--ink)] underline font-[system-ui]"
         >
           {notesOpen ? "Hide notes" : "Add notes"}
         </button>
@@ -97,7 +97,7 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Feedback for the author..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-[var(--rule)] bg-transparent text-sm focus:outline-none focus:border-[var(--ink)] transition-colors"
             rows={2}
           />
         )}
@@ -105,14 +105,14 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
           <button
             onClick={() => handleAction("approved")}
             disabled={acting}
-            className="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+            className="flex-1 px-3 py-1.5 border border-[var(--accent)] text-[var(--accent)] text-sm font-[system-ui] tracking-wider uppercase hover:bg-[var(--accent)] hover:text-[var(--paper)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Approve
           </button>
           <button
             onClick={() => handleAction("edits_requested")}
             disabled={acting || !notes.trim()}
-            className="flex-1 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="flex-1 px-3 py-1.5 border border-[var(--ink)] text-[var(--ink)] text-sm font-[system-ui] tracking-wider uppercase hover:bg-[var(--ink)] hover:text-[var(--paper)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title={!notes.trim() ? "Add notes first" : "Request edits"}
           >
             Request Edits
@@ -120,7 +120,7 @@ export default function AdminHaikuCard({ haiku, onStatusChange }: AdminHaikuCard
           <button
             onClick={() => handleAction("rejected")}
             disabled={acting}
-            className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+            className="flex-1 px-3 py-1.5 border border-[var(--accent-dim)] text-[var(--ink-muted)] text-sm font-[system-ui] tracking-wider uppercase hover:bg-[var(--accent-dim)] hover:text-[var(--ink)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Reject
           </button>
