@@ -7,17 +7,22 @@ export default function StreakCounter() {
 
   useEffect(() => {
     try {
-      const today = new Date().toISOString().split("T")[0];
+      // Key streak days by the visitor's local date, not UTC.
+      const localDateKey = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      const today = localDateKey(new Date());
       const raw = localStorage.getItem("dailyhaiku_streak");
       const data = raw ? JSON.parse(raw) : null;
+      const savedCount = Number(data?.count) || 0;
 
-      if (data?.date === today) {
-        setStreak(data.count);
+      if (data?.date === today && savedCount > 0) {
+        setStreak(savedCount);
         return;
       }
 
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
-      const newCount = data?.date === yesterday ? data.count + 1 : 1;
+      const yesterdayDate = new Date();
+      yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+      const newCount = data?.date === localDateKey(yesterdayDate) ? savedCount + 1 : 1;
 
       localStorage.setItem("dailyhaiku_streak", JSON.stringify({ date: today, count: newCount }));
       setStreak(newCount);

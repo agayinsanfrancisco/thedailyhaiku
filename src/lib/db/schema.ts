@@ -1,4 +1,4 @@
-import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 export const categories = sqliteTable("categories", {
@@ -20,7 +20,9 @@ export const events = sqliteTable("events", {
   categoryId: integer("category_id").references(() => categories.id),
   source: text("source"),
   createdAt: text("created_at").default(sql`(current_timestamp)`),
-});
+}, (table) => [
+  uniqueIndex("events_month_day_title_unique").on(table.month, table.day, table.title),
+]);
 
 export const haikus = sqliteTable("haikus", {
   id: integer("id").primaryKey({ autoIncrement: true }),

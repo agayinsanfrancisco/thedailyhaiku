@@ -14,10 +14,12 @@ export default function SurpriseMeButton() {
       const data = await res.json();
       if (data.id) {
         router.push(`/haiku/${data.id}`);
+        return;
       }
     } catch {
-      setLoading(false);
+      // fall through to re-enable the button
     }
+    setLoading(false);
   };
 
   return (

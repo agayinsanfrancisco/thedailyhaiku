@@ -7,16 +7,9 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import StreakCounter from "@/components/StreakCounter";
 import SurpriseMeButton from "@/components/SurpriseMeButton";
 
-function getToday() {
+function getDateParts(offsetDays = 0) {
   const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return { mmdd: `${month}-${day}`, year: now.getFullYear(), month, day };
-}
-
-function getYesterday() {
-  const now = new Date();
-  now.setDate(now.getDate() - 1);
+  now.setDate(now.getDate() + offsetDays);
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return { mmdd: `${month}-${day}`, year: now.getFullYear(), month, day };
@@ -66,7 +59,7 @@ async function getTodayEvents(month: number, day: number) {
     .from(events)
     .leftJoin(categories, eq(events.categoryId, categories.id))
     .where(and(eq(events.month, month), eq(events.day, day)))
-    .limit(5);
+    .limit(3);
 }
 
 async function getRecentHaikus() {
@@ -102,8 +95,8 @@ async function getCategoryStats() {
 }
 
 export default async function HomePage() {
-  const { mmdd, year, month, day } = getToday();
-  const yesterday = getYesterday();
+  const { mmdd, year, month, day } = getDateParts();
+  const yesterday = getDateParts(-1);
   const [todayHaiku, yesterdayHaiku, todayEvents, recentHaikus, categoryStats] = await Promise.all([
     getTodayHaiku(mmdd, year),
     getYesterdayHaiku(yesterday.mmdd, yesterday.year),
@@ -124,15 +117,15 @@ export default async function HomePage() {
           <section className="pb-6 animate-fade-up">
             <p className="text-[11px] text-[var(--accent)] tracking-widest uppercase mb-2">On this day</p>
             <div className="flex flex-wrap gap-2">
-              {todayEvents.slice(0, 3).map((evt) => (
+              {todayEvents.map((evt) => (
                 <Link
                   key={evt.id}
-                  href="/write"
+                  href={`/write/${mmdd}?event=${evt.id}`}
                   className="group"
                 >
                   <span className="inline-block text-xs text-[var(--ink-muted)] border border-[var(--rule)] px-3 py-1.5 hover:border-[var(--accent)] hover:text-[var(--ink)] transition-colors">
                     {evt.year && <span className="text-[var(--accent)]">{evt.year}</span>}
-                    {evt.year && <span> \u2014 </span>}
+                    {evt.year && <span> &mdash; </span>}
                     {evt.title}
                   </span>
                 </Link>
@@ -214,7 +207,7 @@ export default async function HomePage() {
 
             {todayEvents.length > 0 && (
               <p className="text-sm text-[var(--ink-muted)] mb-2 max-w-md">
-                {todayEvents.length} event{todayEvents.length > 1 ? "s" : ""} happened on this day. Pick one and write the haiku.
+                Something happened on this day. Pick an event above and write the haiku.
               </p>
             )}
 
