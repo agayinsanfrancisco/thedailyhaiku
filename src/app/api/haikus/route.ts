@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { haikus, events, categories } from "@/lib/db/schema";
 import { countLineSyllables } from "@/lib/syllable";
+import { newManageToken } from "@/lib/ownership";
 import { and, eq, desc } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
@@ -25,6 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const year = new Date().getFullYear();
+    const manage = newManageToken();
 
     const existing = await db
       .select()
@@ -59,10 +61,12 @@ export async function POST(request: NextRequest) {
       authorEmail: authorEmail ?? null,
       seasonWord: seasonWord?.trim() || null,
       seasonColor: seasonColor ?? null,
+      manageTokenHash: manage.hash,
       status: "pending",
     }).returning();
 
-    return NextResponse.json({ haiku: newHaiku[0] }, { status: 201 });
+    // Return the plaintext token once — the client stores it; we keep only the hash.
+    return NextResponse.json({ haiku: newHaiku[0], manageToken: manage.token }, { status: 201 });
   } catch (error) {
     console.error("Error submitting haiku:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

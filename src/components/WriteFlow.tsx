@@ -223,6 +223,17 @@ export default function WriteFlow({ initialDate, initialEvent }: { initialDate?:
         setSubmitting(false);
         return;
       }
+      // Silent ownership: remember this haiku's manage token in the browser so
+      // the poet can edit or delete it later with no account.
+      try {
+        if (data.haiku?.id && data.manageToken) {
+          const mine = JSON.parse(localStorage.getItem("dailyhaiku_mine") || "[]");
+          mine.push({ id: data.haiku.id, token: data.manageToken, date: payload.date });
+          localStorage.setItem("dailyhaiku_mine", JSON.stringify(mine));
+        }
+      } catch {
+        /* localStorage unavailable — the token is lost, not fatal */
+      }
       setDone(true);
     } catch {
       setErr("network error — try again");
@@ -449,7 +460,8 @@ export default function WriteFlow({ initialDate, initialEvent }: { initialDate?:
               <p><span className="font-display text-[var(--accent)] mr-2">二</span>Approved? You get an email with a private link to edit or delete it.</p>
               <p><span className="font-display text-[var(--accent)] mr-2">三</span>On the morning of <b className="text-[var(--ink)]">{dateLabel}</b>, your word takes over the front page.</p>
             </div>
-            <div className="flex flex-col gap-2 mt-6">
+            <p className="mt-5 text-[0.72rem] text-[var(--ink-faint)]">Saved to this browser — manage it anytime at <a href="/mine" className="text-[var(--accent)] underline">/mine</a>.</p>
+            <div className="flex flex-col gap-2 mt-5">
               <button onClick={reset} className="act-main">write another day</button>
               <button onClick={() => router.push("/")} className="act-ghost">see today&rsquo;s haiku →</button>
             </div>
