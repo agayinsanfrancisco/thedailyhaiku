@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>the daily haiku — word of the day</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Instrument+Serif:ital@0;1&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f7f3ea;
+    --paper-deep: #efe9db;
+    --card: #fffdf8;
+    --ink: #1a1812;
+    --ink-soft: rgba(26,24,18,0.62);
+    --ink-faint: rgba(26,24,18,0.34);
+    --vermilion: #d8401f;
+    --moss: #5a6b4f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Karla", sans-serif; color: var(--ink); background: var(--paper); overflow-x: hidden; }
+
+  /* washi fiber texture */
+  .washi {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .55;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.18' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.10 0 0 0 0 0.09 0 0 0 0 0.07 0 0 0 0.025 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23p)'/%3E%3C/svg%3E");
+  }
+
+  /* ===== hero ===== */
+  .hero { position: relative; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; z-index: 1; }
+
+  @keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+
+  /* drifting ink motes (same drift mechanic, ink instead of fireflies) */
+  .mote { position: absolute; width: 6px; height: 6px; border-radius: 50% 50% 50% 0; background: var(--ink-faint);
+    animation: drift linear infinite; z-index: 1; }
+  .mote.red { background: rgba(216,64,31,0.5); }
+  @keyframes drift {
+    0% { transform: translate(0, -6vh) rotate(0deg) scale(.7); opacity: 0; }
+    10% { opacity: .8; }
+    90% { opacity: .5; }
+    100% { transform: translate(var(--dx, -5vw), 104vh) rotate(540deg) scale(1); opacity: 0; }
+  }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 2rem 6vw; position: relative; z-index: 6; }
+  .brand { display: flex; align-items: center; gap: .9rem; text-decoration: none; color: var(--ink); }
+  .brand .mark { width: 46px; height: auto; flex: none; }
+  .brand .mark .dot { fill: var(--ink); }
+  .brand .mark .dot.v { fill: var(--vermilion); }
+  .brand:hover .mark .dot { fill: var(--vermilion); transition: fill .25s; }
+  .brand:hover .mark .dot.v { fill: var(--ink); }
+  .brand .wordmark { font-family: "Instrument Serif", serif; font-style: italic; font-weight: 400; font-size: 1.7rem; line-height: 1; letter-spacing: .005em; }
+  .brand .wordmark i { font-style: normal; color: var(--vermilion); }
+  .brand .wordmark span { display: block; font-family: "Karla", sans-serif; font-style: normal; font-weight: 700;
+    font-size: .54rem; letter-spacing: .38em; text-transform: uppercase; color: var(--ink-faint); margin-top: .3rem; }
+  .topbar nav { display: flex; gap: 1.8rem; align-items: center; font-size: .78rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  .topbar nav a { color: var(--ink-soft); text-decoration: none; }
+  .topbar nav a:hover { color: var(--vermilion); }
+  .streak-pill { border: 1.5px solid var(--ink); border-radius: 999px; padding: .45rem 1rem; font-size: .72rem; letter-spacing: .1em; }
+  .streak-pill b { color: var(--vermilion); }
+
+  .hero-body { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+    position: relative; z-index: 3; padding: 1rem 6vw 4.5rem; }
+  .kicker { font-size: .74rem; font-weight: 700; letter-spacing: .5em; text-transform: uppercase; color: var(--ink-soft);
+    animation: fadeUp 1s ease .1s backwards; }
+
+  /* THE WORD — dynamic, set by JS from today's haiku */
+  .season-word {
+    font-family: "Young Serif", serif; font-weight: 400;
+    font-size: clamp(4.6rem, 14vw, 12rem); line-height: .95; letter-spacing: -0.035em;
+    margin: .8rem 0 0; position: relative; z-index: 2;
+    width: min(92vw, 760px); white-space: nowrap; text-align: center;
+    /* gradient is set inline from the poet's chosen color; this is the no-JS fallback */
+    background: linear-gradient(180deg, rgba(26,24,18,0.6) 18%, rgba(26,24,18,0.12) 92%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .season-word .ch { display: inline-block; animation: riseCh 1.2s ease backwards; }
+  @keyframes riseCh { from { opacity: 0; transform: translateY(.18em); } to { opacity: 1; transform: none; } }
+  .word-note { margin-top: .9rem; font-size: .66rem; letter-spacing: .3em; text-transform: uppercase; color: var(--ink-faint);
+    animation: fadeUp 1s ease 1s backwards; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(34px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* the card they love — unchanged bones, paper-light skin */
+  .haiku-card {
+    margin-top: -1.2rem; position: relative; z-index: 5;
+    background: var(--card); color: var(--ink);
+    width: min(92vw, 760px);
+    border-radius: 18px; padding: 2.8rem 3.6rem 2.2rem;
+    box-shadow: 0 30px 70px rgba(26,24,18,0.16), 0 4px 14px rgba(26,24,18,0.08);
+    animation: fadeUp 1.2s cubic-bezier(.16,1,.3,1) .45s backwards;
+  }
+  .haiku-card .date { font-size: .68rem; font-weight: 700; letter-spacing: .32em; text-transform: uppercase; color: var(--vermilion); margin-bottom: 1.5rem; }
+  /* always exactly three lines — each line a block that never wraps */
+  .poem { font-family: "Young Serif", serif; font-weight: 400; line-height: 1.6; }
+  .poem .l { display: block; white-space: nowrap; font-size: clamp(1.05rem, 4.4vw, 2.05rem); }
+  .poem .l em { font-style: normal; color: var(--vermilion); }
+  .haiku-card .meta { display: flex; justify-content: space-between; align-items: center; gap: 3rem;
+    margin-top: 1.7rem; padding-top: 1.3rem; border-top: 1px solid rgba(26,24,18,0.12); font-size: .8rem; color: var(--ink-soft); }
+  .haiku-card .meta b { font-weight: 700; color: var(--ink); }
+  .haiku-card .meta a { color: var(--vermilion); font-weight: 700; text-decoration: none; font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; }
+
+  .hero-cta { margin-top: 2.4rem; display: flex; gap: 1.2rem; animation: fadeUp 1s ease .7s backwards; position: relative; z-index: 5; }
+  .btn { border-radius: 999px; padding: .95rem 2rem; font-size: .78rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; text-decoration: none; transition: transform .25s, background .25s, color .25s; }
+  .btn:hover { transform: translateY(-3px); }
+  .btn-ink { background: var(--ink); color: var(--paper); }
+  .btn-ink:hover { background: var(--vermilion); }
+  .btn-hero { padding: 1.15rem 3.4rem; font-size: .86rem; box-shadow: 0 14px 36px rgba(26,24,18,0.22); }
+  .btn-line { border: 1.5px solid var(--ink); color: var(--ink); }
+  .btn-line:hover { border-color: var(--vermilion); color: var(--vermilion); }
+
+  .scroll-hint { position: absolute; bottom: 1.4rem; left: 50%; transform: translateX(-50%); z-index: 4;
+    font-size: .64rem; letter-spacing: .4em; text-transform: uppercase; color: var(--ink-faint);
+    animation: bob 2.4s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translate(-50%,0); } 50% { transform: translate(-50%,6px); } }
+
+  /* ===== the story behind the haiku ===== */
+  .story { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 6.5rem 6vw 5.5rem; }
+  .story .label { display: flex; align-items: center; gap: 1.2rem; margin-bottom: 2.2rem; }
+  .story .label .line { flex: 0 0 56px; height: 2px; background: var(--vermilion); }
+  .story .label p { font-size: .72rem; font-weight: 700; letter-spacing: .42em; text-transform: uppercase; color: var(--vermilion); }
+  .story h2 { font-family: "Young Serif", serif; font-weight: 400; letter-spacing: -0.015em;
+    font-size: clamp(1.9rem, 4.6vw, 3.2rem); line-height: 1.12; margin-bottom: 1.8rem; }
+  .story h2 em { font-style: italic; font-weight: 400; color: var(--moss); }
+  .story .para { font-size: 1.08rem; line-height: 1.85; color: var(--ink-soft); max-width: 640px; }
+  .story .source { margin-top: 2.4rem; display: inline-flex; align-items: center; gap: .7rem;
+    font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink); text-decoration: none; border-bottom: 2px solid var(--vermilion); padding-bottom: .35rem; }
+  .story .source:hover { color: var(--vermilion); }
+  .story .source span { font-weight: 400; color: var(--ink-soft); text-transform: none; letter-spacing: 0; }
+
+  /* ===== also on this day ===== */
+  .day-strip { position: relative; z-index: 1; background: var(--ink); color: var(--paper); padding: 1.6rem 6vw; display: flex; gap: 3rem; align-items: center; overflow-x: auto; }
+  .day-strip p { font-size: .7rem; letter-spacing: .3em; text-transform: uppercase; color: rgba(247,243,234,0.5); white-space: nowrap; }
+  .day-strip a { color: var(--paper); text-decoration: none; font-family: "Young Serif", serif; font-size: .94rem; white-space: nowrap; }
+  .day-strip a b { color: var(--vermilion); font-weight: 600; margin-right: .6rem; }
+  .day-strip a:hover { color: var(--vermilion); }
+
+  footer { position: relative; z-index: 1; background: var(--ink); color: rgba(247,243,234,0.55); text-align: center; padding: 2.6rem 6vw 3rem; font-size: .74rem; letter-spacing: .2em; text-transform: uppercase; border-top: 1px solid rgba(247,243,234,0.12); }
+  footer b { color: var(--vermilion); }
+
+  @media (max-width: 640px) {
+    .haiku-card { padding: 2rem 1.4rem 1.6rem; width: 100%; }
+    .haiku-card .meta { gap: 1rem; }
+    .hero-cta { flex-direction: column; align-items: stretch; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="washi"></div>
+
+<section class="hero">
+  <div class="mote" style="left:8%;  animation-duration:17s; animation-delay:0s;  --dx:-4vw"></div>
+  <div class="mote red" style="left:22%; animation-duration:21s; animation-delay:5s;  --dx:6vw"></div>
+  <div class="mote" style="left:46%; animation-duration:19s; animation-delay:9s;  --dx:-7vw"></div>
+  <div class="mote" style="left:64%; animation-duration:23s; animation-delay:2s;  --dx:5vw"></div>
+  <div class="mote red" style="left:81%; animation-duration:18s; animation-delay:12s; --dx:-5vw"></div>
+  <div class="mote" style="left:92%; animation-duration:25s; animation-delay:7s;  --dx:-3vw"></div>
+
+  <div class="topbar">
+    <a class="brand" href="#">
+      <!-- the mark: seventeen dots — a haiku tallied. rows of 5, 7, 5; the 7 in vermilion -->
+      <svg class="mark" viewBox="0 0 44 28" aria-label="the daily haiku — 5 7 5">
+        <circle class="dot" cx="10" cy="5" r="2.3"/><circle class="dot" cx="16" cy="5" r="2.3"/><circle class="dot" cx="22" cy="5" r="2.3"/><circle class="dot" cx="28" cy="5" r="2.3"/><circle class="dot" cx="34" cy="5" r="2.3"/>
+        <circle class="dot v" cx="4" cy="14" r="2.3"/><circle class="dot v" cx="10" cy="14" r="2.3"/><circle class="dot v" cx="16" cy="14" r="2.3"/><circle class="dot v" cx="22" cy="14" r="2.3"/><circle class="dot v" cx="28" cy="14" r="2.3"/><circle class="dot v" cx="34" cy="14" r="2.3"/><circle class="dot v" cx="40" cy="14" r="2.3"/>
+        <circle class="dot" cx="10" cy="23" r="2.3"/><circle class="dot" cx="16" cy="23" r="2.3"/><circle class="dot" cx="22" cy="23" r="2.3"/><circle class="dot" cx="28" cy="23" r="2.3"/><circle class="dot" cx="34" cy="23" r="2.3"/>
+      </svg>
+      <span class="wordmark">the daily haiku<i>.</i></span>
+    </a>
+    <nav>
+      <span class="streak-pill">✶ <b>6-day</b> streak</span>
+      <a href="#">calendar</a><a href="#">write</a>
+    </nav>
+  </div>
+
+  <div class="hero-body">
+    <p class="kicker">June 11, 2026</p>
+    <h1 class="season-word" id="word"></h1>
+    <p class="word-note" id="word-note"></p>
+
+    <div class="haiku-card">
+      <p class="date">today's haiku · 1982 · E.T. premieres</p>
+      <p class="poem">
+        <span class="l">a finger of light —</span>
+        <span class="l">two worlds touch above the bikes,</span>
+        <span class="l"><em>home is a heartbeat.</em></span>
+      </p>
+      <div class="meta">
+        <p>by <b>Maya R.</b> · movies &amp; tv</p>
+        <a href="#story">the story ↓</a>
+      </div>
+    </div>
+
+    <div class="hero-cta">
+      <a class="btn btn-ink btn-hero" href="write.html">write a haiku</a>
+    </div>
+  </div>
+
+  <p class="scroll-hint">scroll</p>
+</section>
+
+<section class="story" id="story">
+  <div class="label"><div class="line"></div><p>what this haiku describes</p></div>
+  <h2>June 11, 1982 — <em>E.T. the Extra-Terrestrial</em> premieres in American theaters</h2>
+  <p class="para">
+    Steven Spielberg's story of a stranded alien and the boy who hides him opened on
+    1,103 screens and never really left. Audiences came back week after week for an
+    entire year; it overtook Star Wars to become the highest-grossing film ever and
+    held the record for a decade. The famous silhouette — a bicycle lifting off
+    across a full moon — became shorthand for wonder itself, and for the feeling
+    that home is something you carry with you.
+  </p>
+  <a class="source" href="#">source <span>· en.wikipedia.org/wiki/E.T._the_Extra-Terrestrial</span></a>
+</section>
+
+<div class="day-strip">
+  <p>also on this day</p>
+  <a href="#"><b>1963</b>Thich Quang Duc's protest shakes Saigon</a>
+  <a href="#"><b>2010</b>first African World Cup kicks off</a>
+  <a href="#"><b>1979</b>John Wayne rides into the sunset</a>
+</div>
+
+<footer>
+  <p>one event · one poem · <b>every day</b></p>
+</footer>
+
+<script>
+  // THE WORD OF THE DAY — chosen by the poet. When submitting, the writer
+  // picks one word (or short phrase) from their haiku as its "season word";
+  // it becomes the giant hero word for the day. Stored as a field on the
+  // haiku (haikus.seasonWord). Fallbacks, in order, when absent:
+  //   1. auto-extract a strong word from the haiku's last line
+  //   2. a small curated kigo almanac keyed to the month
+  const KIGO_FALLBACK = { 1:"first snow",2:"plum blossom",3:"spring rain",4:"cherry petals",5:"new leaves",
+    6:"firefly",7:"cicada",8:"milky way",9:"harvest moon",10:"autumn dusk",11:"falling leaves",12:"deep winter" };
+  // The poet picks the word AND its ink — a small curated palette offered at
+  // submit time (haikus.seasonWord + haikus.seasonColor). Curated so every
+  // choice stays handsome on the paper background.
+  const INKS = {
+    sumi:      "#1a1812",
+    vermilion: "#c2391b",
+    indigo:    "#3f4a7a",
+    moss:      "#5a6b4f",
+    plum:      "#6c4a72",
+    ochre:     "#a87b2f",
+  };
+  // special ink for LGBTQIA+ history moments — a washi-muted pride flag
+  const PRIDE_GRADIENT = "linear-gradient(100deg, rgba(194,57,27,.85) 0%, rgba(201,122,43,.85) 20%, rgba(179,145,47,.85) 40%, rgba(79,122,69,.85) 60%, rgba(63,95,138,.85) 80%, rgba(108,74,114,.85) 100%)";
+  const todaysHaiku = {
+    lines: ["a finger of light —", "two worlds touch above the bikes,", "home is a heartbeat."],
+    seasonWord: "heartbeat",   // ← Maya R. picked this when she submitted
+    seasonColor: "indigo",     // ← and this ink, from the palette
+    author: "Maya R.",
+  };
+  const STOP = new Set(["a","an","the","of","and","or","is","in","on","to","above","under","into","with","for","at","by","we","our","your","two","one"]);
+  function extractFromHaiku(h) {
+    for (const line of [...h.lines].reverse()) {
+      const words = line.toLowerCase().replace(/[^a-z\s]/g, "").split(/\s+/)
+        .filter(w => w.length > 3 && !STOP.has(w));
+      if (words.length) return words.sort((a, b) => b.length - a.length)[0];
+    }
+    return null;
+  }
+  const now = new Date(2026, 5, 11); // preview date: June 11
+  const w = todaysHaiku.seasonWord || extractFromHaiku(todaysHaiku) || KIGO_FALLBACK[now.getMonth() + 1];
+  const el = document.getElementById("word");
+  [...w].forEach((ch, i) => {
+    const s = document.createElement("span");
+    s.className = "ch"; s.textContent = ch === " " ? " " : ch;
+    s.style.animationDelay = (0.25 + i * 0.05) + "s";
+    el.appendChild(s);
+  });
+  // tint the word with the poet's chosen ink ("pride" renders the rainbow)
+  if (todaysHaiku.seasonColor === "pride") {
+    el.style.background = PRIDE_GRADIENT;
+  } else {
+    const hex = INKS[todaysHaiku.seasonColor] || INKS.sumi;
+    const rgb = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)).join(",");
+    el.style.background = `linear-gradient(180deg, rgba(${rgb},0.72) 18%, rgba(${rgb},0.16) 92%)`;
+  }
+  el.style.webkitBackgroundClip = el.style.backgroundClip = "text";
+  // shrink-to-fit: the word never escapes the haiku block's width.
+  // Re-run after webfonts load (the display font is wider than the fallback serif,
+  // so an early measurement under-shrinks) and on resize.
+  function fitWord() {
+    el.style.fontSize = "";
+    let fs = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > el.clientWidth && fs > 24) {
+      fs *= 0.95;
+      el.style.fontSize = fs + "px";
+    }
+  }
+  requestAnimationFrame(fitWord);
+  if (document.fonts) document.fonts.ready.then(fitWord);
+  window.addEventListener("resize", fitWord);
+  document.getElementById("word-note").textContent = todaysHaiku.seasonWord
+    ? `— the poet's word, chosen by ${todaysHaiku.author} —`
+    : "— today's season word —";
+  document.title = "the daily haiku — " + w;
+</script>
+</body>
+</html>

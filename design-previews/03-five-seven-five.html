@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE DAILY HAIKU — 5·7·5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f4f1ea;
+    --ink: #131210;
+    --verm: #e8401c;
+    --tape: #ffd900;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  ::selection { background: var(--verm); color: var(--paper); }
+  body { background: var(--paper); color: var(--ink); font-family: "Spectral", serif; overflow-x: hidden; }
+
+  /* masthead */
+  .mast { display: flex; justify-content: space-between; align-items: stretch; border-bottom: 4px solid var(--ink); }
+  .mast .logo { font-family: "Archivo Black", sans-serif; font-size: clamp(1.2rem, 3vw, 2rem); padding: 1.2rem 2rem; text-transform: uppercase; letter-spacing: -0.02em; }
+  .mast .logo span { color: var(--verm); }
+  .mast nav { display: flex; }
+  .mast nav a {
+    font-family: "IBM Plex Mono", monospace; font-size: .78rem; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--ink); text-decoration: none; padding: 0 1.6rem; display: flex; align-items: center;
+    border-left: 1px solid var(--ink); transition: all .2s;
+  }
+  .mast nav a:hover { background: var(--ink); color: var(--paper); }
+  .mast nav a.hot { background: var(--verm); color: var(--paper); border-left: none; }
+  .mast nav a.hot:hover { background: var(--ink); }
+
+  .dateline { display: flex; justify-content: space-between; font-family: "IBM Plex Mono", monospace;
+    font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; padding: .7rem 2rem; border-bottom: 1px solid var(--ink); }
+  .dateline .streak b { color: var(--verm); }
+
+  /* hero: numerals + poem */
+  .hero { display: grid; grid-template-columns: minmax(180px, 26vw) 1fr; border-bottom: 4px solid var(--ink); }
+  .numerals { border-right: 1px solid var(--ink); display: flex; flex-direction: column; }
+  .numerals div {
+    flex: 1; display: grid; place-items: center; font-family: "Archivo Black", sans-serif;
+    font-size: clamp(4rem, 11vw, 11rem); line-height: 1; position: relative; overflow: hidden;
+  }
+  .numerals div + div { border-top: 1px solid var(--ink); }
+  .numerals div span { position: relative; z-index: 2; animation: slideNum .8s cubic-bezier(.16,1,.3,1) backwards; }
+  .numerals div:nth-child(1) span { animation-delay: .1s; }
+  .numerals div:nth-child(2) span { animation-delay: .25s; color: var(--verm); }
+  .numerals div:nth-child(3) span { animation-delay: .4s; }
+  @keyframes slideNum { from { transform: translateY(110%); } to { transform: translateY(0); } }
+  .numerals div::after {
+    content: attr(data-l); position: absolute; bottom: .8rem; right: 1rem; font-family: "IBM Plex Mono", monospace;
+    font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 400;
+  }
+
+  .poem-block { padding: clamp(2rem, 5vw, 5rem); display: flex; flex-direction: column; justify-content: center; position: relative; }
+  .event-tag {
+    display: inline-flex; align-self: flex-start; background: var(--tape); padding: .5rem 1rem; transform: rotate(-1.2deg);
+    font-family: "IBM Plex Mono", monospace; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 600;
+    box-shadow: 3px 3px 0 var(--ink); margin-bottom: 2.4rem;
+  }
+  .poem-line {
+    font-size: clamp(1.9rem, 4.6vw, 4rem); line-height: 1.3; font-weight: 300;
+    animation: fadeIn 1s ease backwards;
+  }
+  .poem-line:nth-of-type(2) { animation-delay: .3s; }
+  .poem-line:nth-of-type(3) { animation-delay: .6s; }
+  .poem-line i { font-style: italic; color: var(--verm); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: translateX(0); } }
+  .poem-meta { margin-top: 2.6rem; font-family: "IBM Plex Mono", monospace; font-size: .76rem; letter-spacing: .1em; text-transform: uppercase; display: flex; gap: 2.4rem; }
+  .poem-meta b { color: var(--verm); }
+  .stamp {
+    position: absolute; top: clamp(1rem,3vw,3rem); right: clamp(1rem,3vw,3rem);
+    width: 92px; height: 92px; border: 3px solid var(--verm); border-radius: 50%;
+    color: var(--verm); display: grid; place-items: center; text-align: center;
+    font-family: "Archivo Black", sans-serif; font-size: .6rem; text-transform: uppercase; line-height: 1.3;
+    transform: rotate(10deg); animation: stampIn .5s cubic-bezier(.2,1.8,.4,1) 1s backwards;
+  }
+  @keyframes stampIn { from { transform: rotate(10deg) scale(2.6); opacity: 0; } to { transform: rotate(10deg) scale(1); opacity: 1; } }
+
+  /* actions bar */
+  .actions { display: flex; border-bottom: 4px solid var(--ink); }
+  .actions a {
+    flex: 1; text-align: center; padding: 1.5rem; text-decoration: none;
+    font-family: "Archivo Black", sans-serif; text-transform: uppercase; font-size: clamp(.9rem, 2vw, 1.3rem);
+    color: var(--ink); transition: all .2s; letter-spacing: .02em;
+  }
+  .actions a + a { border-left: 1px solid var(--ink); }
+  .actions a:hover { background: var(--ink); color: var(--paper); letter-spacing: .08em; }
+  .actions a.verm { background: var(--verm); color: var(--paper); }
+  .actions a.verm:hover { background: var(--ink); }
+
+  /* ticker */
+  .ticker { background: var(--ink); color: var(--paper); overflow: hidden; white-space: nowrap; padding: .85rem 0; border-bottom: 4px solid var(--ink); }
+  .ticker-track { display: inline-block; animation: tick 30s linear infinite; }
+  .ticker:hover .ticker-track { animation-play-state: paused; }
+  @keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .ticker span { font-family: "IBM Plex Mono", monospace; font-size: .76rem; letter-spacing: .14em; text-transform: uppercase; margin: 0 2.4rem; }
+  .ticker b { color: var(--tape); font-weight: 600; }
+
+  /* archive wall */
+  .wall-head { display: flex; justify-content: space-between; align-items: baseline; padding: 4rem 2rem 2rem; }
+  .wall-head h2 { font-family: "Archivo Black", sans-serif; font-size: clamp(2rem, 6vw, 4.4rem); text-transform: uppercase; line-height: .95; letter-spacing: -0.02em; }
+  .wall-head h2 em { font-style: normal; -webkit-text-stroke: 2px var(--ink); color: transparent; }
+  .wall-head a { font-family: "IBM Plex Mono", monospace; font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--verm); text-decoration: none; font-weight: 600; }
+
+  .wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); border-top: 1px solid var(--ink); border-left: 1px solid var(--ink); margin: 0 2rem 0; }
+  .tile { border-right: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 2rem; text-decoration: none; color: var(--ink); position: relative; transition: all .2s; }
+  .tile:hover { background: var(--ink); color: var(--paper); }
+  .tile:hover .num { color: var(--tape); }
+  .tile .num { font-family: "Archivo Black", sans-serif; font-size: .9rem; color: var(--verm); margin-bottom: 1.2rem; }
+  .tile .poem { font-size: 1.16rem; line-height: 1.65; font-weight: 300; }
+  .tile .meta { margin-top: 1.4rem; font-family: "IBM Plex Mono", monospace; font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; opacity: .65; }
+
+  /* categories */
+  .cat-row { display: flex; flex-wrap: wrap; padding: 3rem 2rem 5rem; gap: 0; }
+  .cat-row a {
+    font-family: "IBM Plex Mono", monospace; font-size: .74rem; text-transform: uppercase; letter-spacing: .12em;
+    color: var(--ink); text-decoration: none; border: 1px solid var(--ink); padding: .8rem 1.4rem; margin: 0 .6rem .6rem 0;
+    transition: all .2s;
+  }
+  .cat-row a:hover { background: var(--verm); color: var(--paper); border-color: var(--verm); transform: translate(-2px,-2px); box-shadow: 3px 3px 0 var(--ink); }
+  .cat-row a b { color: var(--verm); margin-left: .5rem; }
+  .cat-row a:hover b { color: var(--tape); }
+
+  footer { border-top: 4px solid var(--ink); padding: 1.4rem 2rem; display: flex; justify-content: space-between; font-family: "IBM Plex Mono", monospace; font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; }
+  footer b { color: var(--verm); }
+
+  @media (max-width: 760px) {
+    .hero { grid-template-columns: 1fr; }
+    .numerals { flex-direction: row; border-right: none; border-bottom: 1px solid var(--ink); }
+    .numerals div { padding: 1.2rem 0; } .numerals div + div { border-top: none; border-left: 1px solid var(--ink); }
+    .mast nav a { padding: 0 .9rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <p class="logo">The Daily<span>★</span>Haiku</p>
+  <nav>
+    <a href="#">Browse</a>
+    <a href="#">Calendar</a>
+    <a href="#">Surprise</a>
+    <a class="hot" href="#">Write</a>
+  </nav>
+</header>
+
+<div class="dateline">
+  <p>Wed · June 11 · 2026 — Issue No. 162</p>
+  <p class="streak">Your streak: <b>■■■■■■ 6 days</b></p>
+</div>
+
+<section class="hero">
+  <div class="numerals">
+    <div data-l="syllables"><span>5</span></div>
+    <div data-l="syllables"><span>7</span></div>
+    <div data-l="syllables"><span>5</span></div>
+  </div>
+  <div class="poem-block">
+    <span class="event-tag">June 11, 1982 — E.T. premieres</span>
+    <p class="poem-line">a finger of light —</p>
+    <p class="poem-line">two worlds touch above the bikes,</p>
+    <p class="poem-line"><i>home is a heartbeat</i></p>
+    <div class="poem-meta">
+      <p>by <b>Maya R.</b></p>
+      <p>cat: movies &amp; tv</p>
+      <p>№ 252 of ∞</p>
+    </div>
+    <div class="stamp">today's<br>haiku<br>· 5·7·5 ·</div>
+  </div>
+</section>
+
+<div class="actions">
+  <a href="#">← Yesterday's</a>
+  <a class="verm" href="#">Write Tomorrow's Haiku</a>
+  <a href="#">Surprise Me ⟳</a>
+</div>
+
+<div class="ticker">
+  <div class="ticker-track">
+    <span>ALSO ON JUNE 11 → <b>1963</b> Thich Quang Duc's protest shakes Saigon</span>
+    <span><b>2010</b> First African World Cup kicks off in Johannesburg</span>
+    <span><b>1979</b> John Wayne rides into the sunset</span>
+    <span>PICK ONE · WRITE 17 SYLLABLES · BECOME HISTORY'S POET</span>
+    <span>ALSO ON JUNE 11 → <b>1963</b> Thich Quang Duc's protest shakes Saigon</span>
+    <span><b>2010</b> First African World Cup kicks off in Johannesburg</span>
+    <span><b>1979</b> John Wayne rides into the sunset</span>
+    <span>PICK ONE · WRITE 17 SYLLABLES · BECOME HISTORY'S POET</span>
+  </div>
+</div>
+
+<div class="wall-head">
+  <h2>The <em>Archive</em></h2>
+  <a href="#">View all 252 →</a>
+</div>
+
+<section class="wall">
+  <a class="tile" href="#">
+    <p class="num">№ 251</p>
+    <p class="poem">bricks in summer heat<br>a riot blooms into pride —<br>the streets learn our names</p>
+    <p class="meta">Jun 28 1969 · LGBTQIA+ · Jordan K.</p>
+  </a>
+  <a class="tile" href="#">
+    <p class="num">№ 250</p>
+    <p class="poem">one small step echoes<br>across a sea of stillness —<br>boot prints in gray dust</p>
+    <p class="meta">Jul 20 1969 · Science · anonymous</p>
+  </a>
+  <a class="tile" href="#">
+    <p class="num">№ 249</p>
+    <p class="poem">hammers in the night<br>concrete gives way to dancing —<br>two skies become one</p>
+    <p class="meta">Nov 9 1989 · History · Petra W.</p>
+  </a>
+  <a class="tile" href="#">
+    <p class="num">№ 248</p>
+    <p class="poem">glass lights up at dawn<br>the whole world inside a palm —<br>we forget to look</p>
+    <p class="meta">Jun 29 2007 · Technology · Dev S.</p>
+  </a>
+  <a class="tile" href="#">
+    <p class="num">№ 247</p>
+    <p class="poem">a library grows<br>from a million quiet hands —<br>no card catalog</p>
+    <p class="meta">Jan 15 2001 · Technology · wiki_wanderer</p>
+  </a>
+  <a class="tile" href="#">
+    <p class="num">№ 246</p>
+    <p class="poem">the cold sea opens<br>a thousand lights blink and drown —<br>stars keep their distance</p>
+    <p class="meta">Apr 14 1912 · History · E. Morrow</p>
+  </a>
+</section>
+
+<div class="cat-row">
+  <a href="#">Movies &amp; TV<b>34</b></a>
+  <a href="#">Music<b>28</b></a>
+  <a href="#">Sports<b>12</b></a>
+  <a href="#">Technology<b>41</b></a>
+  <a href="#">Science &amp; Nature<b>37</b></a>
+  <a href="#">Politics &amp; History<b>52</b></a>
+  <a href="#">Literature<b>19</b></a>
+  <a href="#">Art &amp; Design<b>16</b></a>
+  <a href="#">LGBTQIA+<b>13</b></a>
+</div>
+
+<footer>
+  <p>17 syllables a day keeps oblivion away</p>
+  <p>est. <b>2026</b></p>
+</footer>
+</body>
+</html>

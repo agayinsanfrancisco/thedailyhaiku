@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>the daily haiku — write a haiku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Instrument+Serif:ital@0;1&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f7f3ea;
+    --card: #fffdf8;
+    --ink: #1a1812;
+    --ink-soft: rgba(26,24,18,0.62);
+    --ink-faint: rgba(26,24,18,0.34);
+    --rule: rgba(26,24,18,0.12);
+    --vermilion: #d8401f;
+    --moss: #5a6b4f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Karla", sans-serif; color: var(--ink); background: var(--paper); }
+  .washi { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .55;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.18' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.10 0 0 0 0 0.09 0 0 0 0 0.07 0 0 0 0.025 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23p)'/%3E%3C/svg%3E"); }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 1.8rem 4vw; position: relative; z-index: 2; }
+  .brand { display: flex; align-items: center; gap: .9rem; text-decoration: none; color: var(--ink); }
+  .brand .mark { width: 46px; height: auto; }
+  .brand .mark .dot { fill: var(--ink); }
+  .brand .mark .dot.v { fill: var(--vermilion); }
+  .brand .wordmark { font-family: "Instrument Serif", serif; font-style: italic; font-weight: 400; font-size: 1.7rem; line-height: 1; }
+  .brand .wordmark i { font-style: normal; color: var(--vermilion); }
+  .topbar nav { display: flex; gap: 1.8rem; font-size: .78rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  .topbar nav a { color: var(--ink-soft); text-decoration: none; }
+  .topbar nav a:hover { color: var(--vermilion); }
+
+  .intro { text-align: center; padding: .2rem 4vw 1.8rem; position: relative; z-index: 1; }
+  .intro h1 { font-family: "Young Serif", serif; font-weight: 400; font-size: clamp(1.8rem, 4vw, 2.6rem); }
+  .intro h1 em { font-style: normal; color: var(--vermilion); }
+  .intro p { margin-top: .7rem; color: var(--ink-soft); font-size: .95rem; }
+  .intro p b { color: var(--ink); }
+
+  /* ===== staged layout — everything lands above the fold =====
+     stage 1: centered calendar
+     stage 2: calendar | facts side by side (facts scroll internally, page doesn't)
+     stage 3: calendar | facts | composer */
+  .layout { position: relative; z-index: 1; display: grid; gap: 1.5rem;
+    margin: 0 auto; padding: 0 3vw 4rem; align-items: start;
+    grid-template-columns: minmax(0, 480px); justify-content: center; max-width: 1400px;
+    transition: all .4s; }
+  .layout.stage2 { grid-template-columns: 380px minmax(0, 620px); justify-content: center; }
+  .layout.stage3 { grid-template-columns: 290px 330px minmax(0, 1fr); justify-content: stretch; }
+  .col-right { position: sticky; top: 1.2rem; display: none; flex-direction: column; gap: 1.2rem; }
+  .layout.stage3 .col-right { display: flex; animation: reveal .6s cubic-bezier(.16,1,.3,1); }
+  #facts-panel { display: none; position: sticky; top: 1.2rem; }
+  .layout.stage2 #facts-panel, .layout.stage3 #facts-panel { display: block; animation: reveal .6s cubic-bezier(.16,1,.3,1); }
+  #cal-panel { position: sticky; top: 1.2rem; }
+  .layout.stage3 #cal-panel { padding: 1.3rem; }
+  .layout.stage3 #cal-panel .panel-label p { display: none; }
+  @keyframes reveal { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+
+  .panel { background: var(--card); border-radius: 16px; padding: 1.8rem; box-shadow: 0 10px 34px rgba(26,24,18,0.08); }
+  .panel-label { display: flex; align-items: baseline; gap: .8rem; margin-bottom: 1.3rem; }
+  .panel-label .n { font-family: "Young Serif", serif; font-size: 1rem; color: var(--vermilion); }
+  .panel-label h2 { font-size: .72rem; font-weight: 700; letter-spacing: .26em; text-transform: uppercase; }
+  .panel-label p { font-size: .74rem; color: var(--ink-faint); margin-left: auto; }
+
+  /* calendar */
+  .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .cal-head b { font-family: "Young Serif", serif; font-weight: 400; font-size: 1.05rem; }
+  .cal-head button { background: none; border: 1.5px solid var(--rule); border-radius: 8px; width: 30px; height: 30px;
+    cursor: pointer; color: var(--ink-soft); font-size: .9rem; }
+  .cal-head button:hover { border-color: var(--vermilion); color: var(--vermilion); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-grid .dow { font-size: .58rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-faint); text-align: center; padding: .3rem 0; }
+  .day { position: relative; aspect-ratio: 1; border: 1.5px solid transparent; border-radius: 9px; background: none;
+    font-family: inherit; font-size: .82rem; color: var(--ink); cursor: pointer; transition: all .15s; }
+  .day:hover { border-color: var(--ink-faint); }
+  .day.written { color: var(--ink-faint); cursor: default; }
+  .day.written::after { content: ""; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 4px; border-radius: 50%; background: var(--ink-faint); }
+  .day.written:hover { border-color: transparent; }
+  .day.sel { background: var(--vermilion); border-color: var(--vermilion); color: var(--card); font-weight: 700; }
+  .day.empty { visibility: hidden; }
+  .cal-legend { display: flex; gap: 1.4rem; margin-top: 1rem; font-size: .66rem; color: var(--ink-faint); }
+  .cal-legend span::before { content: "●"; margin-right: .4rem; }
+  .cal-legend .open::before { color: var(--vermilion); }
+  .cal-legend .taken::before { color: var(--ink-faint); }
+
+  /* facts: one per category, per date */
+  .facts { display: grid; grid-template-columns: 1fr; gap: .5rem; }
+  .layout.stage2 .facts { grid-template-columns: 1fr 1fr; }
+  .fact { text-align: left; border: 1.5px solid var(--rule); border-radius: 11px; padding: .6rem .85rem;
+    background: transparent; cursor: pointer; font-family: inherit; color: var(--ink); transition: all .15s; }
+  .fact:hover { border-color: var(--ink-faint); }
+  .fact.sel { border-color: var(--vermilion); background: rgba(216,64,31,0.05); }
+  .fact .cat { display: inline-block; font-size: .56rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--vermilion); margin-bottom: .15rem; }
+  .fact .txt { font-size: .8rem; line-height: 1.4; }
+  .fact .txt b { font-family: "Young Serif", serif; font-weight: 400; color: var(--vermilion); margin-right: .4rem; }
+  .fact.none { border-style: dashed; }
+  .fact.none .txt { color: var(--ink-faint); font-style: italic; }
+  .own-toggle { margin-top: .8rem; background: none; border: none; font-family: inherit; font-size: .78rem;
+    color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .own-toggle:hover { color: var(--vermilion); }
+  .pop-note { font-size: .78rem; line-height: 1.6; color: var(--ink-soft); background: rgba(216,64,31,0.05);
+    border: 1px solid rgba(216,64,31,0.18); border-radius: 11px; padding: .75rem 1rem; margin-bottom: 1.1rem; }
+  .pop-note b { color: var(--vermilion); font-weight: 700; }
+  .own-form { display: none; margin: 0 0 1.2rem; gap: .6rem; flex-direction: column; }
+  .own-form.show { display: flex; }
+  .own-form input, .own-form select { border: 1.5px solid var(--rule); border-radius: 9px; background: transparent;
+    padding: .7rem .9rem; font-family: inherit; font-size: .82rem; color: var(--ink); outline: none; }
+  .own-form input:focus { border-color: var(--ink); }
+  .pull-preview { display: none; border: 1.5px solid var(--rule); border-radius: 9px; padding: .8rem 1rem; }
+  .pull-preview.show { display: block; animation: reveal .35s ease; }
+  .pull-preview.err { border-color: var(--vermilion); }
+  .pull-preview .ph { font-size: .8rem; color: var(--ink-faint); font-style: italic; }
+  .pull-preview .head { font-family: "Young Serif", serif; font-size: .92rem; margin-bottom: .25rem; }
+  .pull-preview .desc { font-size: .78rem; line-height: 1.5; color: var(--ink-soft); }
+  .pull-preview .src { font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-top: .45rem; }
+  .pull-preview .warn { font-size: .8rem; color: var(--vermilion); line-height: 1.5; }
+  .own-form small { font-size: .68rem; color: var(--ink-faint); line-height: 1.5; }
+
+  /* composer */
+  .picked { display: flex; align-items: center; gap: .7rem; background: rgba(216,64,31,0.06); border: 1.5px solid rgba(216,64,31,0.25);
+    border-radius: 11px; padding: .75rem 1rem; margin-bottom: 1.3rem; font-size: .82rem; }
+  .picked .cat { font-size: .58rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--vermilion); flex: none; }
+  .line-row { display: flex; align-items: center; gap: 1.2rem; padding: .8rem 0; }
+  .line-row + .line-row { border-top: 1px dashed var(--rule); }
+  .line-row input { flex: 1; border: none; background: transparent; outline: none;
+    font-family: "Young Serif", serif; font-size: clamp(1.05rem, 2.2vw, 1.45rem); color: var(--ink); min-width: 0; }
+  .line-row input::placeholder { color: var(--ink-faint); }
+  .tally { display: flex; gap: 4px; flex: none; align-items: center; }
+  .tally i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--ink-faint); transition: all .15s; }
+  .tally i.on { background: var(--ink); border-color: var(--ink); }
+  .tally.done i.on { background: var(--moss); border-color: var(--moss); }
+  .tally.over i { background: var(--vermilion); border-color: var(--vermilion); }
+  .tally b { font-size: .62rem; color: var(--ink-faint); width: 2.3em; text-align: right; font-weight: 700; }
+  .tally.done b { color: var(--moss); }
+  .tally.over b { color: var(--vermilion); }
+
+  /* word + ink */
+  .word-row { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center; }
+  .word-input { border: 1.5px solid var(--rule); border-radius: 11px; background: transparent;
+    padding: .8rem 1.1rem; font-family: "Young Serif", serif; font-size: 1.1rem; color: var(--ink); outline: none; min-width: 0; }
+  .word-input:focus { border-color: var(--ink); }
+  .word-input::placeholder { font-family: "Karla", sans-serif; font-size: .8rem; color: var(--ink-faint); }
+  .inks { display: flex; gap: .55rem; }
+  .ink-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: none;
+    outline: 2px solid transparent; outline-offset: 3px; transition: outline-color .15s; }
+  .ink-dot.sel { outline-color: var(--ink); }
+  .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .9rem; }
+  .chips::before { content: "from your poem:"; font-size: .62rem; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-faint); align-self: center; margin-right: .2rem; }
+  .chip { border: 1.5px solid var(--rule); background: transparent; border-radius: 999px; padding: .35rem .85rem;
+    font-family: inherit; font-size: .76rem; color: var(--ink); cursor: pointer; transition: all .15s; }
+  .chip:hover { border-color: var(--ink-faint); }
+  .chip.sel { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .word-preview { margin-top: 1.2rem; padding-top: 1.1rem; border-top: 1px solid var(--rule); text-align: center; }
+  .word-preview .wp { font-family: "Young Serif", serif; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1;
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .word-preview small { display: block; margin-top: .5rem; font-size: .6rem; letter-spacing: .26em; text-transform: uppercase; color: var(--ink-faint); }
+
+  /* sign + email */
+  .sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-bottom: 1.1rem; }
+  .sign-grid input { border: 1.5px solid var(--rule); border-radius: 999px; background: transparent;
+    padding: .85rem 1.2rem; font-family: inherit; font-size: .85rem; outline: none; min-width: 0; }
+  .sign-grid input:focus { border-color: var(--ink); }
+  .opt { display: flex; align-items: flex-start; gap: .7rem; font-size: .8rem; color: var(--ink-soft); padding: .35rem 0; cursor: pointer; }
+  .opt input { accent-color: var(--vermilion); margin-top: .2rem; }
+  .opt b { color: var(--ink); font-weight: 500; }
+  .stamp-btn { width: 100%; margin-top: 1.2rem; display: inline-flex; justify-content: center; align-items: center; gap: .8rem;
+    background: var(--ink); color: var(--paper); border: none; border-radius: 999px; padding: 1.05rem 2.4rem;
+    font-family: inherit; font-size: .82rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; cursor: pointer;
+    transition: background .25s, transform .25s; box-shadow: 0 14px 36px rgba(26,24,18,0.22); }
+  .stamp-btn:hover { background: var(--vermilion); transform: translateY(-2px); }
+  .stamp-btn svg { width: 20px; height: auto; }
+  .stamp-btn .dot { fill: var(--paper); }
+  .fine { margin-top: .9rem; font-size: .68rem; color: var(--ink-faint); text-align: center; line-height: 1.6; }
+
+  .form-err { display: none; margin-top: .8rem; font-size: .76rem; color: var(--vermilion); text-align: center; }
+  .form-err.show { display: block; animation: reveal .3s ease; }
+  .tally.attn { animation: nudge .4s ease 2; }
+  @keyframes nudge { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+  .stamp-btn:disabled { opacity: .6; cursor: default; transform: none; }
+
+  .success-seal { width: 110px; height: 110px; margin: 0 auto 1.4rem; border: 3px solid var(--vermilion);
+    border-radius: 50%; display: grid; place-items: center; transform: rotate(8deg);
+    animation: stampIn .5s cubic-bezier(.2,1.8,.4,1) .15s backwards; }
+  @keyframes stampIn { from { transform: rotate(8deg) scale(2.4); opacity: 0; } to { transform: rotate(8deg) scale(1); opacity: 1; } }
+  .success-seal svg { width: 64px; }
+  .success-seal .dot { fill: var(--vermilion); }
+  .modal.center { text-align: center; }
+  .modal .next-steps { text-align: left; margin-top: 1.4rem; display: flex; flex-direction: column; gap: .8rem; }
+  .modal .next-steps div { display: flex; gap: .8rem; font-size: .84rem; line-height: 1.55; color: var(--ink-soft); }
+  .modal .next-steps b { color: var(--ink); font-weight: 500; }
+  .modal .next-steps .tick { color: var(--vermilion); font-family: "Young Serif", serif; flex: none; }
+
+  /* past-date nudge */
+  .modal-veil { position: fixed; inset: 0; background: rgba(26,24,18,0.45); backdrop-filter: blur(3px);
+    z-index: 50; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
+  .modal-veil.show { display: flex; }
+  .modal { background: var(--card); border-radius: 18px; max-width: 470px; padding: 2.4rem 2.4rem 2rem;
+    box-shadow: 0 40px 90px rgba(26,24,18,0.35); animation: reveal .45s cubic-bezier(.16,1,.3,1); position: relative; }
+  .modal .x { position: absolute; top: 1rem; right: 1.2rem; background: none; border: none; font-size: 1.1rem;
+    color: var(--ink-faint); cursor: pointer; }
+  .modal .x:hover { color: var(--ink); }
+  .modal h3 { font-family: "Young Serif", serif; font-weight: 400; font-size: 1.5rem; margin-bottom: .8rem; }
+  .modal h3 em { font-style: normal; color: var(--vermilion); }
+  .modal p { font-size: .88rem; line-height: 1.7; color: var(--ink-soft); }
+  .modal p b { color: var(--ink); font-weight: 500; }
+  .modal .acts { display: flex; flex-direction: column; gap: .7rem; margin-top: 1.6rem; }
+  .modal .act-main { background: var(--ink); color: var(--paper); border: none; border-radius: 999px;
+    padding: .95rem 1.6rem; font-family: inherit; font-size: .78rem; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; cursor: pointer; transition: background .2s; }
+  .modal .act-main:hover { background: var(--vermilion); }
+  .modal .act-ghost { background: none; border: none; font-family: inherit; font-size: .78rem;
+    color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .modal .act-ghost:hover { color: var(--vermilion); }
+
+  @media (max-width: 1080px) {
+    .layout.stage2 { grid-template-columns: minmax(0, 480px); }
+    .layout.stage3 { grid-template-columns: 1fr; }
+    .col-right, #facts-panel, #cal-panel { position: static; }
+    #facts-panel .facts { max-height: none; }
+  }
+</style>
+</head>
+<body>
+<div class="washi"></div>
+
+<div class="topbar">
+  <a class="brand" href="02-kigo.html">
+    <svg class="mark" viewBox="0 0 44 28" aria-label="the daily haiku — 5 7 5">
+      <circle class="dot" cx="10" cy="5" r="2.3"/><circle class="dot" cx="16" cy="5" r="2.3"/><circle class="dot" cx="22" cy="5" r="2.3"/><circle class="dot" cx="28" cy="5" r="2.3"/><circle class="dot" cx="34" cy="5" r="2.3"/>
+      <circle class="dot v" cx="4" cy="14" r="2.3"/><circle class="dot v" cx="10" cy="14" r="2.3"/><circle class="dot v" cx="16" cy="14" r="2.3"/><circle class="dot v" cx="22" cy="14" r="2.3"/><circle class="dot v" cx="28" cy="14" r="2.3"/><circle class="dot v" cx="34" cy="14" r="2.3"/><circle class="dot v" cx="40" cy="14" r="2.3"/>
+      <circle class="dot" cx="10" cy="23" r="2.3"/><circle class="dot" cx="16" cy="23" r="2.3"/><circle class="dot" cx="22" cy="23" r="2.3"/><circle class="dot" cx="28" cy="23" r="2.3"/><circle class="dot" cx="34" cy="23" r="2.3"/>
+    </svg>
+    <span class="wordmark">the daily haiku<i>.</i></span>
+  </a>
+  <nav><a href="02-kigo.html">today</a><a href="#">about</a></nav>
+</div>
+
+<header class="intro">
+  <h1>pick a day. pin a <em>moment</em>.</h1>
+  <p>Every haiku here is about <b>pop culture</b> — a film, a song, a match, a launch, a moment people remember.</p>
+</header>
+
+<div class="layout" id="layout">
+
+  <!-- column 1: the day -->
+    <section class="panel" id="cal-panel">
+      <div class="panel-label"><span class="n">一</span><h2>Start here — pick your day</h2><p>dotted days are taken</p></div>
+      <div class="cal-head"><button>←</button><b id="cal-month">June 2026</b><button>→</button></div>
+      <div class="cal-grid" id="cal"></div>
+      <div class="cal-legend"><span class="open">open</span><span class="taken">written — tap to read</span></div>
+    </section>
+
+    <section class="panel" id="facts-panel">
+      <div class="panel-label"><span class="n">二</span><h2>Pick a moment</h2><p id="fact-date"></p></div>
+      <div class="facts" id="facts"></div>
+      <button class="own-toggle" id="own-toggle">none of these? add your own moment +</button>
+    </section>
+
+  <!-- column 3: the poem (unlocks after a moment is picked) -->
+  <div class="col-right">
+    <section class="panel">
+      <div class="panel-label"><span class="n">三</span><h2>Your seventeen syllables</h2><p>about the moment you picked</p></div>
+      <p class="pop-note"><b>Pop culture only.</b> Every haiku pins a verifiable moment — something that made
+      headlines, a chart, a screen, or a stage. Sources must be news articles, interviews, or official
+      archives — <b>Wikipedia and fan wikis don't count</b>.</p>
+      <div class="own-form" id="own-form">
+        <input id="own-title" placeholder="title of the moment — e.g. 'Toy Story 4 wins the Oscar'">
+        <div style="display:grid;grid-template-columns:1fr auto;gap:.6rem">
+          <input id="own-link" placeholder="link — news, interview, or archive (not Wikipedia)">
+          <select id="own-cat"><option>Movies &amp; TV</option><option>Music</option><option>Sports</option><option>Technology</option><option>Science &amp; Nature</option><option>Politics &amp; History</option><option>Literature</option><option>Art &amp; Design</option><option>LGBTQIA+</option></select>
+        </div>
+        <div class="pull-preview" id="pull-preview"></div>
+        <small>Drop the title and link — we pull the description and tidy the headline automatically, then fact-check it before publishing.</small>
+      </div>
+      <div class="picked"><span class="cat" id="picked-cat"></span><span id="picked-txt"></span></div>
+      <div class="line-row"><input id="l1" autocomplete="off" placeholder="five syllables…"><div class="tally" data-n="5"><b></b></div></div>
+      <div class="line-row"><input id="l2" autocomplete="off" placeholder="seven syllables…"><div class="tally" data-n="7"><b></b></div></div>
+      <div class="line-row"><input id="l3" autocomplete="off" placeholder="five syllables…"><div class="tally" data-n="5"><b></b></div></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-label"><span class="n">四</span><h2>Your word &amp; ink</h2><p>tomorrow's headline</p></div>
+      <div class="word-row">
+        <input class="word-input" id="word-input" maxlength="24" autocomplete="off" placeholder="any word — it goes through approval">
+        <div class="inks" id="inks"></div>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="word-preview"><span class="wp" id="wp"></span><small>how it appears on the front page</small></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-label"><span class="n">五</span><h2>Sign &amp; stamp</h2><p>both optional</p></div>
+      <div class="sign-grid">
+        <input placeholder="your name (or anonymous)">
+        <input placeholder="email (for the two things below)">
+      </div>
+      <label class="opt"><input type="checkbox" checked><span><b>Tell me when it's approved</b> — with a private link to edit or delete it. No account needed.</span></label>
+      <label class="opt"><input type="checkbox" checked><span><b>Send me the daily word</b> — one email each morning: the word, the haiku, ten seconds.</span></label>
+      <button class="stamp-btn">
+        <svg viewBox="0 0 44 28"><circle class="dot" cx="10" cy="5" r="2.3"/><circle class="dot" cx="16" cy="5" r="2.3"/><circle class="dot" cx="22" cy="5" r="2.3"/><circle class="dot" cx="28" cy="5" r="2.3"/><circle class="dot" cx="34" cy="5" r="2.3"/><circle class="dot" cx="4" cy="14" r="2.3"/><circle class="dot" cx="10" cy="14" r="2.3"/><circle class="dot" cx="16" cy="14" r="2.3"/><circle class="dot" cx="22" cy="14" r="2.3"/><circle class="dot" cx="28" cy="14" r="2.3"/><circle class="dot" cx="34" cy="14" r="2.3"/><circle class="dot" cx="40" cy="14" r="2.3"/><circle class="dot" cx="10" cy="23" r="2.3"/><circle class="dot" cx="16" cy="23" r="2.3"/><circle class="dot" cx="22" cy="23" r="2.3"/><circle class="dot" cx="28" cy="23" r="2.3"/><circle class="dot" cx="34" cy="23" r="2.3"/></svg>
+        stamp it
+      </button>
+      <p class="form-err" id="form-err"></p>
+      <p class="fine">Submissions are reviewed before publishing — the poem, your word, and your moment all get a human (and a fact-check) before they hit the front page.</p>
+    </section>
+  </div>
+</div>
+
+<div class="modal-veil" id="done-veil">
+  <div class="modal center">
+    <div class="success-seal">
+      <svg viewBox="0 0 44 28"><circle class="dot" cx="10" cy="5" r="2.3"/><circle class="dot" cx="16" cy="5" r="2.3"/><circle class="dot" cx="22" cy="5" r="2.3"/><circle class="dot" cx="28" cy="5" r="2.3"/><circle class="dot" cx="34" cy="5" r="2.3"/><circle class="dot" cx="4" cy="14" r="2.3"/><circle class="dot" cx="10" cy="14" r="2.3"/><circle class="dot" cx="16" cy="14" r="2.3"/><circle class="dot" cx="22" cy="14" r="2.3"/><circle class="dot" cx="28" cy="14" r="2.3"/><circle class="dot" cx="34" cy="14" r="2.3"/><circle class="dot" cx="40" cy="14" r="2.3"/><circle class="dot" cx="10" cy="23" r="2.3"/><circle class="dot" cx="16" cy="23" r="2.3"/><circle class="dot" cx="22" cy="23" r="2.3"/><circle class="dot" cx="28" cy="23" r="2.3"/><circle class="dot" cx="34" cy="23" r="2.3"/></svg>
+    </div>
+    <h3>stamped<em>.</em></h3>
+    <p>Your haiku for <b id="done-date"></b> is in review.</p>
+    <div class="next-steps">
+      <div><span class="tick">一</span><span>We <b>fact-check your moment</b> and read every poem — usually within a day.</span></div>
+      <div><span class="tick">二</span><span>Approved? You get an <b>email with a private link</b> to edit or delete it. No account, the link is yours.</span></div>
+      <div><span class="tick">三</span><span>On the morning of <b id="done-date2"></b>, your word takes over the front page.</span></div>
+    </div>
+    <div class="acts">
+      <button class="act-main" id="done-another">write another day</button>
+      <a class="act-ghost" href="02-kigo.html" style="text-align:center">see today's haiku →</a>
+    </div>
+  </div>
+</div>
+
+<div class="modal-veil" id="past-veil">
+  <div class="modal">
+    <button class="x" id="past-x">✕</button>
+    <h3>that day already <em>happened</em></h3>
+    <p>A haiku for a future day takes over the <b>front page</b> when its morning comes — the whole
+    site wears your words. A past day goes straight to the archive: still yours forever, just quieter.</p>
+    <p style="margin-top:.8rem">Tip: the next open day gets you published soonest — or claim a date that
+    means something to you. <b>Your birthday. An anniversary. The day you met.</b></p>
+    <div class="acts">
+      <button class="act-main" id="past-next"></button>
+      <button class="act-ghost" id="past-anyway"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ===== per-date moments (demo: 3 curated June days; production generates
+  // one fact per category per date via the Claude validation pipeline) =====
+  const DAY_FACTS = {
+    11: [
+      { cat: "movies & tv",        y: 1982, t: "E.T. the Extra-Terrestrial premieres in American theaters" },
+      { cat: "music",              y: 1988, t: "70,000 sing for Mandela at the Wembley tribute concert" },
+      { cat: "sports",             y: 2010, t: "South Africa opens the first World Cup on African soil" },
+      { cat: "technology",         y: 1978, t: "Texas Instruments unveils the Speak & Spell" },
+      { cat: "science & nature",   y: 2008, t: "NASA's Fermi space telescope launches to map gamma rays" },
+      { cat: "politics & history", y: 1963, t: "JFK delivers his landmark civil-rights address" },
+      { cat: "literature",         y: 1925, t: "William Styron, author of Sophie's Choice, is born" },
+      { cat: "art & design",       y: 1776, t: "Painter John Constable is born in Suffolk" },
+      { cat: "lgbtqia+",           y: null, t: "no verified moment yet for this day — add yours below" },
+    ],
+    12: [
+      { cat: "movies & tv",        y: 1981, t: "Raiders of the Lost Ark hits theaters" },
+      { cat: "music",              y: 1965, t: "The Beatles are named Members of the British Empire" },
+      { cat: "sports",             y: 1991, t: "Jordan's Bulls win their first NBA championship" },
+      { cat: "technology",         y: 1979, t: "The pedal-powered Gossamer Albatross crosses the English Channel" },
+      { cat: "science & nature",   y: null, t: "no verified moment yet for this day — add yours below" },
+      { cat: "politics & history", y: 1987, t: "Reagan at the Berlin Wall: 'tear down this wall'" },
+      { cat: "literature",         y: 1942, t: "Anne Frank receives a diary for her 13th birthday" },
+      { cat: "art & design",       y: null, t: "no verified moment yet for this day — add yours below" },
+      { cat: "lgbtqia+",           y: 2016, t: "49 lives are taken at Pulse nightclub; the world answers with pride" },
+    ],
+    13: [
+      { cat: "movies & tv",        y: 1986, t: "Mary-Kate and Ashley Olsen are born" },
+      { cat: "music",              y: 1970, t: "'The Long and Winding Road' becomes the Beatles' last US #1" },
+      { cat: "sports",             y: 1997, t: "The Bulls take their fifth title in seven years" },
+      { cat: "technology",         y: 1983, t: "Pioneer 10 becomes the first craft to leave the solar system" },
+      { cat: "science & nature",   y: null, t: "no verified moment yet for this day — add yours below" },
+      { cat: "politics & history", y: 1966, t: "Miranda v. Arizona: 'you have the right to remain silent'" },
+      { cat: "literature",         y: 1865, t: "Poet W.B. Yeats is born in Dublin" },
+      { cat: "art & design",       y: null, t: "no verified moment yet for this day — add yours below" },
+      { cat: "lgbtqia+",           y: null, t: "no verified moment yet for this day — add yours below" },
+    ],
+  };
+  const factsFor = (d) => DAY_FACTS[((d - 11) % 3 + 3) % 3 + 11]; // demo: rotate the 3 curated sets
+
+  // ===== staged flow =====
+  const layout = document.getElementById("layout");
+  // demo: the first ten days of June 2026 are already written
+  const isWritten = (y, m, d) => y === 2026 && m === 5 && d <= 10;
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  let calY = 2026, calM = 5;                    // any month, past or future
+  let selY = null, selM = null, selDay = null, selFact = null;
+
+  const cal = document.getElementById("cal");
+  function renderCal() {
+    document.getElementById("cal-month").textContent = MONTHS[calM] + " " + calY;
+    cal.innerHTML = "";
+    ["s","m","t","w","t","f","s"].forEach(d => { const e = document.createElement("div"); e.className = "dow"; e.textContent = d; cal.appendChild(e); });
+    const firstDow = new Date(calY, calM, 1).getDay();
+    const days = new Date(calY, calM + 1, 0).getDate();
+    for (let i = 0; i < firstDow; i++) { const e = document.createElement("button"); e.className = "day empty"; cal.appendChild(e); }
+    for (let d = 1; d <= days; d++) {
+      const b = document.createElement("button");
+      const written = isWritten(calY, calM, d);
+      const sel = selDay === d && selM === calM && selY === calY;
+      b.className = "day" + (written ? " written" : "") + (sel ? " sel" : "");
+      b.textContent = d;
+      if (!written) b.onclick = () => pickDay(d);
+      cal.appendChild(b);
+    }
+  }
+  const navMonth = (dir) => { calM += dir;
+    if (calM < 0) { calM = 11; calY--; } if (calM > 11) { calM = 0; calY++; }
+    renderCal(); };
+  document.querySelectorAll(".cal-head button")[0].onclick = () => navMonth(-1);
+  document.querySelectorAll(".cal-head button")[1].onclick = () => navMonth(1);
+
+  const veil = document.getElementById("past-veil");
+  document.getElementById("past-x").onclick = () => veil.classList.remove("show");
+  veil.onclick = (e) => { if (e.target === veil) veil.classList.remove("show"); };
+  document.getElementById("past-next").onclick = () => {
+    veil.classList.remove("show");
+    calY = TODAY.y; calM = TODAY.m;
+    pickDay(nextOpenDay(), true);
+  };
+  document.getElementById("past-anyway").onclick = () => {
+    veil.classList.remove("show");
+    if (pendingPast) { calY = pendingPast.y; calM = pendingPast.m; renderCal(); pickDay(pendingPast.d, true); }
+  };
+
+  // demo "today": June 11, 2026 · next open day = first unwritten day from today
+  const TODAY = { y: 2026, m: 5, d: 11 };
+  const isPast = (y, m, d) => y < TODAY.y || (y === TODAY.y && (m < TODAY.m || (m === TODAY.m && d < TODAY.d)));
+  function nextOpenDay() { let d = TODAY.d; while (isWritten(TODAY.y, TODAY.m, d)) d++; return d; }
+  let pendingPast = null;
+  function pickDay(d, force) {
+    if (!force && isPast(calY, calM, d)) {
+      pendingPast = { y: calY, m: calM, d };
+      const n = nextOpenDay();
+      document.getElementById("past-next").textContent = `take ${MONTHS[TODAY.m]} ${n} — the next open day`;
+      document.getElementById("past-anyway").textContent = `write for ${MONTHS[calM]} ${d} anyway`;
+      veil.classList.add("show");
+      return;
+    }
+    selDay = d; selM = calM; selY = calY; selFact = null;
+    renderCal();
+    document.getElementById("fact-date").textContent = MONTHS[selM] + " " + d;
+    document.getElementById("own-form").classList.remove("show");
+    renderFacts();
+    layout.classList.remove("stage3");          // composer hides until a moment is picked
+    layout.classList.add("stage2");             // facts appear beside the calendar — above the fold
+  }
+
+  const factsEl = document.getElementById("facts");
+  function renderFacts() {
+    const FACTS = factsFor(selDay);
+    factsEl.innerHTML = "";
+    FACTS.forEach((f, i) => {
+      const b = document.createElement("button");
+      b.className = "fact" + (i === selFact ? " sel" : "") + (f.y ? "" : " none");
+      b.innerHTML = `<span class="cat">${f.cat}</span><div class="txt">${f.y ? `<b>${f.y}</b>` : ""}${f.t}</div>`;
+      b.onclick = f.y ? () => pickFact(i) : () => ownMoment();
+      factsEl.appendChild(b);
+    });
+  }
+  function pickFact(i) {
+    selFact = i; renderFacts();
+    const f = factsFor(selDay)[i];
+    document.getElementById("picked-cat").textContent = f.cat;
+    document.getElementById("picked-txt").textContent = f.y + " — " + f.t;
+    if (f.cat === "lgbtqia+") {
+      chosenInk = "pride";
+      document.querySelectorAll(".ink-dot").forEach(x =>
+        x.classList.toggle("sel", x.title.startsWith("pride")));
+      renderPreview();
+    }
+    unlockComposer();
+  }
+  // "fix the header": trim, collapse spaces, strip wrapping quotes/trailing dot, capitalize
+  function tidyHeadline(t) {
+    t = t.trim().replace(/\s+/g, " ").replace(/^["'\u201c]+|["'\u201d]+$/g, "").replace(/\.$/, "");
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  const BLOCKED_SOURCES = /wikipedia\.org|fandom\.com|wikia\.com/i;
+  const pullEl = document.getElementById("pull-preview");
+  let pullTimer = null;
+  function autoPull() {
+    const title = document.getElementById("own-title").value.trim();
+    const link = document.getElementById("own-link").value.trim();
+    if (!link) { pullEl.classList.remove("show", "err"); return; }
+    if (BLOCKED_SOURCES.test(link)) {
+      pullEl.className = "pull-preview show err";
+      pullEl.innerHTML = '<p class="warn">Wikipedia and fan wikis can\'t be the source — find the news story or archive they cite and link that instead.</p>';
+      return;
+    }
+    pullEl.className = "pull-preview show";
+    pullEl.innerHTML = '<p class="ph">pulling the description from your link…</p>';
+    clearTimeout(pullTimer);
+    pullTimer = setTimeout(async () => {
+      const fullLink = link.startsWith("http") ? link : "https://" + link;
+      let domain = "your source";
+      try { domain = new URL(fullLink).hostname.replace("www.", ""); } catch {}
+      let head = tidyHeadline(title || "Your moment");
+      let desc = "Description pulled from the article's metadata — run the dev server and this card fills " +
+                 "with the page's real summary. It gets fact-checked along with your haiku.";
+      // real pull via the app's API when it's running (dev: localhost:3000)
+      try {
+        const api = await fetch("http://localhost:3000/api/moments/preview", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: fullLink }),
+        });
+        const data = await api.json();
+        if (!api.ok) { pullEl.classList.add("err"); pullEl.innerHTML = `<p class="warn">${data.error}</p>`; return; }
+        if (data.description) desc = data.description;
+        if (!title && data.title) head = tidyHeadline(data.title);
+        if (data.domain) domain = data.domain;
+      } catch { /* no server running — keep the simulated text */ }
+      pullEl.innerHTML = `
+        <p class="head">${head}</p>
+        <p class="desc">${desc}</p>
+        <p class="src">${domain}</p>`;
+      document.getElementById("picked-txt").textContent = head;
+      applyOwnCat();
+    }, 300);
+  }
+  function applyOwnCat() {
+    const cat = document.getElementById("own-cat").value.toLowerCase();
+    document.getElementById("picked-cat").textContent = cat;
+    if (cat === "lgbtqia+" && chosenInk !== "pride") {
+      chosenInk = "pride";
+      document.querySelectorAll(".ink-dot").forEach(x =>
+        x.classList.toggle("sel", x.title.startsWith("pride")));
+      renderPreview();
+    }
+  }
+  document.getElementById("own-link").addEventListener("input", autoPull);
+  document.getElementById("own-title").addEventListener("input", autoPull);
+  document.getElementById("own-cat").addEventListener("change", applyOwnCat);
+
+  function ownMoment() {
+    document.getElementById("own-form").classList.add("show");
+    document.getElementById("picked-cat").textContent = "your moment";
+    document.getElementById("picked-txt").textContent = "fill in what happened on the left — it gets fact-checked";
+    unlockComposer();
+  }
+  function unlockComposer() {
+    layout.classList.add("stage3");
+    document.getElementById("l1").focus();
+  }
+  document.getElementById("own-toggle").onclick = ownMoment;
+  renderCal();
+
+  // ===== syllables =====
+  function syl(word) {
+    word = word.toLowerCase().replace(/[^a-z]/g, "");
+    if (!word) return 0;
+    const groups = word.match(/[aeiouy]+/g) || [];
+    let n = groups.length || 1;
+    if (word.endsWith("e") && !word.endsWith("le") && n > 1) n--;
+    return Math.max(1, n);
+  }
+  const sylLine = (t) => t.split(/\s+/).filter(Boolean).reduce((a, w) => a + syl(w), 0);
+  const inputs = [l1, l2, l3];
+  const tallies = document.querySelectorAll(".tally");
+  function renderTally(tally, count, target) {
+    const label = tally.querySelector("b");
+    tally.querySelectorAll("i").forEach(d => d.remove());
+    for (let i = 0; i < Math.max(target, count); i++) {
+      const d = document.createElement("i");
+      if (i < count) d.className = "on";
+      tally.insertBefore(d, label);
+    }
+    tally.classList.toggle("done", count === target);
+    tally.classList.toggle("over", count > target);
+    label.textContent = count + "/" + target;
+  }
+
+  // ===== word + ink =====
+  const INKS = { sumi:"#1a1812", vermilion:"#c2391b", indigo:"#3f4a7a", moss:"#5a6b4f", plum:"#6c4a72", ochre:"#a87b2f", pride:"PRIDE" };
+  // the pride ink: a special gradient for LGBTQIA+ history moments (anyone may pick it)
+  const PRIDE_GRADIENT = "linear-gradient(100deg, rgba(194,57,27,.85) 0%, rgba(201,122,43,.85) 20%, rgba(179,145,47,.85) 40%, rgba(79,122,69,.85) 60%, rgba(63,95,138,.85) 80%, rgba(108,74,114,.85) 100%)";
+  let chosenWord = "", chosenInk = "vermilion";
+  const STOP = new Set(["a","an","the","of","and","or","is","in","on","to","above","with","for","at","by"]);
+  const wordInput = document.getElementById("word-input");
+  function renderChips() {
+    const words = [...new Set(inputs.flatMap(i => i.value.toLowerCase().replace(/[^a-z\s]/g, "").split(/\s+/))
+      .filter(w => w.length > 2 && !STOP.has(w)))];
+    chips.innerHTML = "";
+    words.forEach(w => {
+      const b = document.createElement("button");
+      b.className = "chip" + (w === chosenWord ? " sel" : "");
+      b.textContent = w;
+      b.onclick = () => { chosenWord = w; wordInput.value = w; renderChips(); renderPreview(); };
+      chips.appendChild(b);
+    });
+  }
+  function renderPreview() {
+    const el = document.getElementById("wp");
+    el.textContent = chosenWord || "·";
+    if (chosenInk === "pride") {
+      el.style.background = PRIDE_GRADIENT;
+    } else {
+      const hex = INKS[chosenInk];
+      const rgb = [1,3,5].map(i => parseInt(hex.slice(i, i+2), 16)).join(",");
+      el.style.background = `linear-gradient(180deg, rgba(${rgb},0.85) 14%, rgba(${rgb},0.3) 94%)`;
+    }
+    el.style.webkitBackgroundClip = el.style.backgroundClip = "text";
+  }
+  wordInput.addEventListener("input", () => { chosenWord = wordInput.value.trim(); renderChips(); renderPreview(); });
+  function update() {
+    inputs.forEach((inp, i) => renderTally(tallies[i], sylLine(inp.value), +tallies[i].dataset.n));
+    renderChips(); renderPreview();
+  }
+  inputs.forEach(i => i.addEventListener("input", update));
+  update();
+  // ===== submit =====
+  const stampBtn = document.querySelector(".stamp-btn");
+  const formErr = document.getElementById("form-err");
+  stampBtn.onclick = () => {
+    const targets = [5, 7, 5];
+    const counts = inputs.map(i => sylLine(i.value));
+    const badLine = counts.findIndex((c, i) => c !== targets[i]);
+    if (badLine !== -1) {
+      const t = tallies[badLine];
+      t.classList.remove("attn"); void t.offsetWidth; t.classList.add("attn");
+      formErr.textContent = `line ${["one","two","three"][badLine]} needs ${targets[badLine]} syllables — it has ${counts[badLine]}`;
+      formErr.classList.add("show");
+      inputs[badLine].focus();
+      return;
+    }
+    if (!chosenWord) {
+      formErr.textContent = "pick your word — it becomes the front-page headline";
+      formErr.classList.add("show");
+      wordInput.focus();
+      return;
+    }
+    formErr.classList.remove("show");
+    // house style: tidy whitespace; the last line ends with a period unless
+    // the poet already closed it with stronger punctuation
+    inputs.forEach(i => i.value = i.value.trim().replace(/\s+/g, " "));
+    if (!/[.!?\u2026\u2014]$/.test(inputs[2].value)) inputs[2].value += ".";
+    update();
+    stampBtn.disabled = true;
+    stampBtn.lastChild.textContent = " stamping…";
+    setTimeout(() => {
+      const dateStr = MONTHS[selM] + " " + selDay;
+      document.getElementById("done-date").textContent = dateStr;
+      document.getElementById("done-date2").textContent = dateStr;
+      document.getElementById("done-veil").classList.add("show");
+      stampBtn.disabled = false;
+      stampBtn.lastChild.textContent = " stamp it";
+    }, 700);
+  };
+  document.getElementById("done-another").onclick = () => {
+    document.getElementById("done-veil").classList.remove("show");
+    layout.classList.remove("stage2", "stage3");
+    selDay = null; selFact = null;
+    inputs.forEach(i => i.value = "");
+    wordInput.value = ""; chosenWord = "";
+    renderCal(); update();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  Object.entries(INKS).forEach(([name, hex]) => {
+    const d = document.createElement("button");
+    d.className = "ink-dot" + (name === chosenInk ? " sel" : "");
+    d.style.background = name === "pride" ? PRIDE_GRADIENT : hex;
+    d.title = name === "pride" ? "pride — for queer history (or whenever)" : name;
+    d.onclick = () => { chosenInk = name;
+      document.querySelectorAll(".ink-dot").forEach(x => x.classList.remove("sel"));
+      d.classList.add("sel"); renderPreview(); };
+    document.getElementById("inks").appendChild(d);
+  });
+</script>
+</body>
+</html>
