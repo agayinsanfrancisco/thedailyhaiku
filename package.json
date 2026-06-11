@@ -5,11 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "node -e \"const{execSync}=require('child_process');try{execSync('npx drizzle-kit push --force',{stdio:'inherit'})}catch(e){console.error('DB push failed:',e.message)};try{execSync('npx tsx src/seed.ts',{stdio:'inherit'})}catch(e){console.error('Seed failed:',e.message)};execSync('next start',{stdio:'inherit'})\"",
+    "start": "node -e \"const{execSync}=require('child_process');try{execSync('npx drizzle-kit migrate',{stdio:'inherit'})}catch(e){console.error('DB migrate failed:',e.message)};try{execSync('npx tsx src/seed.ts',{stdio:'inherit'})}catch(e){console.error('Seed failed:',e.message)};execSync('next start',{stdio:'inherit'})\"",
     "lint": "eslint",
-    "db:push": "npx drizzle-kit push",
+    "db:generate": "npx drizzle-kit generate",
+    "db:migrate": "npx drizzle-kit migrate",
     "db:seed": "npx tsx src/seed.ts",
-    "setup": "npx drizzle-kit push && npx tsx src/seed.ts"
+    "setup": "npx drizzle-kit migrate && npx tsx src/seed.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",
