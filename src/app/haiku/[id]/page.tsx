@@ -6,6 +6,8 @@ import { eq } from "drizzle-orm";
 import { wordOfTheDay } from "@/lib/design";
 import HeroWord from "@/components/HeroWord";
 
+export const dynamic = "force-dynamic";
+
 async function getHaiku(id: number) {
   const result = await db
     .select({

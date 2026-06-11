@@ -4,6 +4,8 @@ import { haikus, categories } from "@/lib/db/schema";
 import { eq, and, desc, like } from "drizzle-orm";
 import BrowseFilter from "./BrowseFilter";
 
+export const dynamic = "force-dynamic";
+
 function formatDate(mmdd: string) {
   const [m, d] = mmdd.split("-").map(Number);
   return new Date(0, m - 1, d).toLocaleDateString("en-US", { month: "long", day: "numeric" });

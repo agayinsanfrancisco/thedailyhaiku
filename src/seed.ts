@@ -1,13 +1,9 @@
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
-import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import * as schema from "./lib/db/schema";
 import additionalEvents from "../data/additional-events.json";
 
-const client = createClient({
-  url: process.env.DATABASE_URL ?? "file:./data/thedailyhaiku.db",
-});
-
+const client = postgres(process.env.DATABASE_URL!, { max: 1, prepare: false });
 const db = drizzle(client, { schema });
 
 const categoriesList = [
@@ -118,45 +114,8 @@ async function main() {
   const allCategories = await db.select().from(schema.categories);
   const categoryMap = new Map(allCategories.map((c) => [c.slug, c.id]));
 
-  // Earlier seeds had a no-op conflict target, so restarts duplicated every
-  // event. Point haikus at the surviving (lowest-id) copy, drop the rest,
-  // then enforce uniqueness so it can't recur.
-  await db.run(sql`
-    UPDATE haikus SET event_id = (
-      SELECT MIN(e2.id) FROM events e2
-      JOIN events e1 ON e1.id = haikus.event_id
-      WHERE e2.month = e1.month AND e2.day = e1.day AND e2.title = e1.title
-    )
-    WHERE event_id IS NOT NULL
-  `);
-  const deduped = await db.run(sql`
-    DELETE FROM events WHERE id NOT IN (
-      SELECT MIN(id) FROM events GROUP BY month, day, title
-    )
-  `);
-  if (deduped.rowsAffected > 0) {
-    console.log(`  Removed ${deduped.rowsAffected} duplicate events`);
-  }
-  await db.run(
-    sql`CREATE UNIQUE INDEX IF NOT EXISTS events_month_day_title_unique ON events (month, day, title)`
-  );
-
-  // Wrong-dated entries shipped in b2d6681 and may already be seeded; the
-  // corrected entries below have different dates, so remove the stale copies
-  // (unless a haiku already references one).
-  const staleEvents = [
-    { month: 3, day: 27, title: "Lawrence v. Texas argued before the Supreme Court" },
-    { month: 7, day: 2, title: "Rachel Levine becomes first openly transgender Senate-confirmed official" },
-    { month: 1, day: 24, title: "Transgender Day of Visibility is officially recognized" },
-  ];
-  for (const stale of staleEvents) {
-    await db.run(sql`
-      DELETE FROM events
-      WHERE month = ${stale.month} AND day = ${stale.day} AND title = ${stale.title}
-        AND id NOT IN (SELECT event_id FROM haikus WHERE event_id IS NOT NULL)
-    `);
-  }
-
+  // Idempotent: a unique index on (month, day, title) prevents duplicates, and
+  // we skip events already present so re-seeding only inserts what's new.
   const existing = await db
     .select({ month: schema.events.month, day: schema.events.day, title: schema.events.title })
     .from(schema.events);
@@ -191,4 +150,11 @@ async function main() {
   console.log("Seed complete!");
 }
 
-main().catch(console.error);
+main()
+  .catch((e) => {
+    console.error("Seed failed:", e);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await client.end();
+  });

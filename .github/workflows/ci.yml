@@ -40,31 +40,13 @@ jobs:
 
       - run: npm ci
 
-      - name: Create data directory
-        run: mkdir -p data
-
-      - name: Push database schema
-        run: npx drizzle-kit push
-        env:
-          DATABASE_URL: file:./data/thedailyhaiku.db
-
-      - name: Seed database
-        run: npx tsx src/seed.ts
-        env:
-          DATABASE_URL: file:./data/thedailyhaiku.db
-
+      # No DB at build time — schema push + seed run at container start on
+      # spica, against the linked Postgres. The build only compiles.
       - name: Build Next.js
         run: npm run build
         env:
-          DATABASE_URL: file:./data/thedailyhaiku.db
           ADMIN_PASSWORD: ci-test-password
           SESSION_SECRET: ci-session-secret-at-least-32-chars-long!!
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: next-build
-          path: .next/
 
   deploy:
     name: Deploy to Coolify

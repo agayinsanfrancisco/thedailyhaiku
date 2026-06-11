@@ -2,17 +2,24 @@ import { db } from "@/lib/db";
 import { haikus, categories } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export default async function sitemap() {
   const baseUrl = "https://thedailyhaiku.com";
 
-  const allHaikus = await db
-    .select({ id: haikus.id, date: haikus.date, year: haikus.year })
-    .from(haikus)
-    .where(eq(haikus.status, "approved"));
-
-  const allCategories = await db
-    .select({ slug: categories.slug })
-    .from(categories);
+  // Generated at request time; tolerate the DB being unreachable so the build
+  // (and a cold start) never fails on the sitemap.
+  let allHaikus: { id: number; date: string; year: number }[] = [];
+  let allCategories: { slug: string }[] = [];
+  try {
+    allHaikus = await db
+      .select({ id: haikus.id, date: haikus.date, year: haikus.year })
+      .from(haikus)
+      .where(eq(haikus.status, "approved"));
+    allCategories = await db.select({ slug: categories.slug }).from(categories);
+  } catch (e) {
+    console.error("sitemap: DB unavailable, returning static routes only", e);
+  }
 
   const haikuEntries = allHaikus.map((h) => ({
     url: `${baseUrl}/haiku/${h.id}`,
