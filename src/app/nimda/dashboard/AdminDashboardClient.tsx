@@ -34,7 +34,7 @@ export default function AdminDashboardClient() {
     try {
       const res = await fetch("/api/haikus/all");
       if (res.status === 401) {
-        router.push("/admin");
+        router.push("/nimda");
         return;
       }
       const data = await res.json();

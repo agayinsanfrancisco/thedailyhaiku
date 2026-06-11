@@ -53,9 +53,6 @@ export default function RootLayout({
               <Link href="/browse" className="text-[#8a8278] hover:text-[#c0b8a8] transition-colors">
                 Browse
               </Link>
-              <Link href="/admin" className="text-[#5a5248] hover:text-[#8a8278] transition-colors text-xs">
-                Admin
-              </Link>
             </div>
           </nav>
         </div>
@@ -66,7 +63,6 @@ export default function RootLayout({
             <div className="flex items-center gap-5">
               <Link href="/write" className="hover:text-[#8a8278] transition-colors">Write</Link>
               <Link href="/browse" className="hover:text-[#8a8278] transition-colors">Browse</Link>
-              <Link href="/admin" className="hover:text-[#8a8278] transition-colors">Admin</Link>
             </div>
           </div>
         </footer>

@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.push("/admin/dashboard");
+      router.push("/nimda/dashboard");
     } catch {
       setError("Network error");
       setLoading(false);

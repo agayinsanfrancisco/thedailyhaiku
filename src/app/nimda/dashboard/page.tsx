@@ -5,7 +5,7 @@ import AdminDashboardClient from "./AdminDashboardClient";
 export default async function AdminDashboardPage() {
   const isAdmin = await requireAdmin();
   if (!isAdmin) {
-    redirect("/admin");
+    redirect("/nimda");
   }
 
   return <AdminDashboardClient />;
