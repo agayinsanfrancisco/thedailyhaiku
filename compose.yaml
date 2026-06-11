@@ -1,0 +1,19 @@
+# Local Postgres for development (alternative to a native install).
+# Usage:  docker compose up -d
+# Then set DATABASE_URL in .env.local to:
+#   postgres://postgres:postgres@localhost:5432/thedailyhaiku
+# and run:  npm run setup   (migrate + seed)
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: thedailyhaiku-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: thedailyhaiku
+    ports:
+      - "5432:5432"
+    volumes:
+      - thedailyhaiku-pgdata:/var/lib/postgresql/data
+volumes:
+  thedailyhaiku-pgdata:
