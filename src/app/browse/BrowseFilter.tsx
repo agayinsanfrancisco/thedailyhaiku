@@ -33,58 +33,26 @@ export default function BrowseFilter({
     router.push(qs ? `/browse?${qs}` : "/browse");
   };
 
+  const field =
+    "px-4 py-2.5 rounded-full border border-[var(--rule)] bg-[var(--card)] text-sm outline-none focus:border-[var(--ink)] transition-colors placeholder:text-[var(--ink-faint)]";
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap gap-3 mb-10 items-end">
-      <div>
-        <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-1">
-          Category
-        </label>
-        <select
-          name="category"
-          defaultValue={currentCategory ?? ""}
-          className="px-3 py-2 border border-[var(--rule)] bg-transparent text-sm focus:outline-none focus:border-[var(--ink)] transition-colors"
-        >
-          <option value="">All categories</option>
-          {categories.map((cat) => (
-            <option key={cat.slug} value={cat.slug}>{cat.name}</option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-1">
-          Author
-        </label>
-        <input
-          type="text"
-          name="author"
-          defaultValue={currentAuthor ?? ""}
-          placeholder="Search author..."
-          className="px-3 py-2 border border-[var(--rule)] bg-transparent text-sm focus:outline-none focus:border-[var(--ink)] transition-colors w-40 placeholder:text-[var(--accent-dim)]"
-        />
-      </div>
-      <div>
-        <label className="block text-xs font-[system-ui] text-[var(--ink-muted)] mb-1">
-          Date
-        </label>
-        <input
-          type="text"
-          name="date"
-          defaultValue={currentDate ?? ""}
-          placeholder="MM-DD (e.g. 06-10)"
-          className="px-3 py-2 border border-[var(--rule)] bg-transparent text-sm focus:outline-none focus:border-[var(--ink)] transition-colors w-36 placeholder:text-[var(--accent-dim)]"
-        />
-      </div>
+    <form onSubmit={handleSubmit} className="flex flex-wrap gap-2.5 justify-center items-center">
+      <select name="category" defaultValue={currentCategory ?? ""} className={field}>
+        <option value="">All categories</option>
+        {categories.map((cat) => (
+          <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+        ))}
+      </select>
+      <input type="text" name="author" defaultValue={currentAuthor ?? ""} placeholder="author…" className={`${field} w-36`} />
+      <input type="text" name="date" defaultValue={currentDate ?? ""} placeholder="MM-DD" className={`${field} w-28`} />
       <button
         type="submit"
-        className="px-4 py-2 text-xs font-[system-ui] tracking-wider uppercase border-2 border-[var(--ink)] text-[var(--ink)] hover:bg-[var(--ink)] hover:text-[var(--paper)] transition-colors"
+        className="px-5 py-2.5 rounded-full bg-[var(--ink)] text-[var(--paper)] text-xs font-bold tracking-[0.14em] uppercase hover:bg-[var(--accent)] transition-colors"
       >
         Filter
       </button>
       {(currentCategory || currentAuthor || currentDate) && (
-        <Link
-          href="/browse"
-          className="px-4 py-2 text-xs font-[system-ui] text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors"
-        >
+        <Link href="/browse" className="px-3 py-2.5 text-xs text-[var(--ink-soft)] hover:text-[var(--accent)] transition-colors">
           Clear
         </Link>
       )}

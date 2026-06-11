@@ -60,48 +60,48 @@ export default async function BrowsePage({
   ]);
 
   return (
-    <article className="max-w-5xl mx-auto px-6 pt-16">
-      <p className="text-xs text-[var(--ink-muted)] tracking-widest uppercase mb-2">
-        Browse
-      </p>
-      <h1 className="text-2xl mb-8">All Haikus</h1>
+    <article className="relative z-[1] max-w-6xl mx-auto px-[4vw] pt-6 pb-24">
+      <div className="text-center mb-3">
+        <p className="text-[0.72rem] font-bold tracking-[0.42em] uppercase text-[var(--accent)] mb-2">the archive</p>
+        <h1 className="font-display text-[clamp(2rem,5vw,3.2rem)]">every haiku, every day</h1>
+      </div>
 
-      <BrowseFilter
-        categories={allCategories}
-        currentCategory={params.category ?? null}
-        currentAuthor={params.author ?? null}
-        currentDate={params.date ?? null}
-      />
+      <div className="mt-8 mb-10">
+        <BrowseFilter
+          categories={allCategories}
+          currentCategory={params.category ?? null}
+          currentAuthor={params.author ?? null}
+          currentDate={params.date ?? null}
+        />
+      </div>
 
       {results.length === 0 ? (
-        <div className="text-center py-16 text-[var(--ink-muted)]">
-          <p className="text-lg">No haikus found</p>
-          <p className="text-sm mt-1">Try different filters or write one!</p>
+        <div className="text-center py-20 text-[var(--ink-soft)]">
+          <p className="font-display text-2xl">nothing here yet</p>
+          <p className="text-sm mt-2">
+            Try different filters, or{" "}
+            <Link href="/write" className="text-[var(--accent)] underline underline-offset-2">write one</Link>.
+          </p>
         </div>
       ) : (
-        <div className="columns-1 sm:columns-2 gap-8 [column-rule:1px_solid_var(--rule)]">
-          {results.map((haiku, i) => (
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-5">
+          {results.map((haiku) => (
             <Link
               key={haiku.id}
               href={`/haiku/${haiku.id}`}
-              className="block break-inside-avoid mb-8 p-0 group animate-reveal"
-              style={{ animationDelay: `${i * 60}ms` }}
+              className="block break-inside-avoid mb-5 panel transition-transform hover:-translate-y-1"
+              style={{ textDecoration: "none" }}
             >
-              <div className="border-t border-[var(--rule)] pt-4">
-                <div className="font-serif text-[17px] leading-[1.55] space-y-0.5 mb-3">
-                  <p>{haiku.line1}</p>
-                  <p>{haiku.line2}</p>
-                  <p>{haiku.line3}</p>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-[var(--ink-muted)]">
-                  <span>{formatDate(haiku.date)}</span>
-                  {haiku.categoryName && <span className="text-[var(--accent)]">{haiku.categoryName}</span>}
-                  {haiku.authorName && <span className="truncate max-w-[120px]">{haiku.authorName}</span>}
-                  <span className="group-hover:text-[var(--ink)] transition-colors ml-auto opacity-0 group-hover:opacity-100">
-                    Read
-                  </span>
-                </div>
+              <div className="flex items-center gap-2 mb-4 text-[0.62rem] font-bold tracking-[0.18em] uppercase">
+                <span className="text-[var(--accent)]">{formatDate(haiku.date)}</span>
+                {haiku.categoryName && <span className="text-[var(--ink-faint)]">· {haiku.categoryName}</span>}
               </div>
+              <div className="font-display text-[1.18rem] leading-[1.7] text-[var(--ink)]">
+                <p>{haiku.line1}</p>
+                <p>{haiku.line2}</p>
+                <p style={{ color: "var(--accent)" }}>{haiku.line3}</p>
+              </div>
+              {haiku.authorName && <p className="mt-4 text-[0.74rem] text-[var(--ink-soft)]">— {haiku.authorName}</p>}
             </Link>
           ))}
         </div>
