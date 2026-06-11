@@ -38,6 +38,23 @@ export default function MineClient() {
     } catch {
       mine = [];
     }
+    // Recovery: a manage link from email (/mine?claim=ID.TOKEN) adds the haiku
+    // to this device, then cleans the URL.
+    const claim = new URLSearchParams(window.location.search).get("claim");
+    if (claim) {
+      const dot = claim.indexOf(".");
+      const cid = Number(claim.slice(0, dot));
+      const ctoken = decodeURIComponent(claim.slice(dot + 1));
+      if (cid && ctoken && !mine.some((m) => m.id === cid)) {
+        mine = [...mine, { id: cid, token: ctoken, date: "" }];
+        try {
+          localStorage.setItem("dailyhaiku_mine", JSON.stringify(mine));
+        } catch {
+          /* ignore */
+        }
+      }
+      window.history.replaceState({}, "", "/mine");
+    }
     if (mine.length === 0) {
       setItems([]);
       return;

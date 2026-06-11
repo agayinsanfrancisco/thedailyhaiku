@@ -4,6 +4,8 @@ import { haikus, categories } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { tokenMatches } from "@/lib/ownership";
+import { sendApprovalNotice } from "@/lib/email";
+import { wordOfTheDay } from "@/lib/design";
 
 function manageTokenFrom(request: NextRequest): string | null {
   return request.headers.get("x-manage-token") ?? request.nextUrl.searchParams.get("token");
@@ -78,6 +80,15 @@ export async function PATCH(
 
   if (updated.length === 0) {
     return NextResponse.json({ error: "Haiku not found" }, { status: 404 });
+  }
+
+  // Notify the poet on approval (no-op until email is configured).
+  const h = updated[0];
+  if (status === "approved" && h.authorEmail) {
+    const month = parseInt(h.date.split("-")[0]);
+    const word = wordOfTheDay(h.seasonWord, [h.line1, h.line2, h.line3], month);
+    const niceDate = new Date(h.year, month - 1, parseInt(h.date.split("-")[1])).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    void sendApprovalNotice(h.authorEmail, h.id, niceDate, word);
   }
 
   return NextResponse.json({ haiku: updated[0] });

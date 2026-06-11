@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { haikus, events, categories } from "@/lib/db/schema";
+import { haikus, events, categories, subscribers } from "@/lib/db/schema";
 import { countLineSyllables } from "@/lib/syllable";
 import { newManageToken } from "@/lib/ownership";
+import { sendSubmissionReceipt } from "@/lib/email";
 import { and, eq, desc } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { date, line1, line2, line3, title, categoryId, eventId, isFiller, validationLink, eventHeadline, eventDescription, eventSources, authorName, authorEmail, seasonWord, seasonColor } = body;
+    const { date, line1, line2, line3, title, categoryId, eventId, isFiller, validationLink, eventHeadline, eventDescription, eventSources, authorName, authorEmail, seasonWord, seasonColor, wantApproval, wantDaily } = body;
 
     if (!date || !line1 || !line2 || !line3) {
       return NextResponse.json({ error: "Missing required fields (date, line1, line2, line3)" }, { status: 400 });
@@ -64,6 +65,22 @@ export async function POST(request: NextRequest) {
       manageTokenHash: manage.hash,
       status: "pending",
     }).returning();
+
+    // Email + subscription (both gated on the email opt-ins and a configured key).
+    const email = typeof authorEmail === "string" ? authorEmail.trim() : "";
+    if (email) {
+      if (wantApproval !== false) {
+        // receipt carries the recovery manage link; fire-and-forget
+        void sendSubmissionReceipt(email, newHaiku[0].id, manage.token, date);
+      }
+      if (wantDaily) {
+        await db
+          .insert(subscribers)
+          .values({ email, dailyWord: true })
+          .onConflictDoUpdate({ target: subscribers.email, set: { dailyWord: true, unsubscribedAt: null } })
+          .catch(() => {});
+      }
+    }
 
     // Return the plaintext token once — the client stores it; we keep only the hash.
     return NextResponse.json({ haiku: newHaiku[0], manageToken: manage.token }, { status: 201 });

@@ -56,3 +56,13 @@ export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 export type Haiku = typeof haikus.$inferSelect;
 export type NewHaiku = typeof haikus.$inferInsert;
+
+export const subscribers = sqliteTable("subscribers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull().unique(),
+  dailyWord: integer("daily_word", { mode: "boolean" }).default(true),
+  unsubscribedAt: text("unsubscribed_at"),
+  createdAt: text("created_at").default(sql`(current_timestamp)`),
+});
+
+export type Subscriber = typeof subscribers.$inferSelect;
