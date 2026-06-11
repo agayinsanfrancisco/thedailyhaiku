@@ -1,117 +1,118 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #2a2420;
-  --ink-muted: #7a7268;
-  --paper: #f5f0e8;
-  --surface: #faf7f2;
-  --glass: rgba(250, 247, 242, 0.7);
-  --accent: #c9a84c;
-  --accent-light: #f0e8d0;
-  --accent-muted: #9a8a5a;
-  --rule: #e0d8ce;
-  --rule-strong: #2a2420;
-  --open: #7a7268;
-  --open-bg: #ece6de;
-  --taken: #2a2420;
-  --taken-bg: #e0d8ce;
+  --paper: #f7f3ea;
+  --paper-deep: #efe9db;
+  --card: #fffdf8;
+  --ink: #1a1812;
+  --ink-soft: rgba(26, 24, 18, 0.62);
+  --ink-faint: rgba(26, 24, 18, 0.34);
+  --rule: rgba(26, 24, 18, 0.12);
+  --accent: #d8401f;
+  --accent-deep: #c2391b;
+  --moss: #5a6b4f;
+
+  /* legacy aliases still referenced by browse/admin pages */
+  --ink-muted: var(--ink-soft);
+  --surface: var(--paper-deep);
+  --accent-light: #f3e4dd;
+  --accent-muted: #a8704f;
 }
 
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Karla", ui-sans-serif, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
+.font-display {
+  font-family: "Young Serif", Georgia, serif;
+  font-weight: 400;
+}
 .font-serif {
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: "Young Serif", Georgia, serif;
+}
+
+/* washi-fiber paper texture */
+.washi {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.18' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.10 0 0 0 0 0.09 0 0 0 0 0.07 0 0 0 0.025 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23p)'/%3E%3C/svg%3E");
+}
+
+/* brand lockup */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  text-decoration: none;
+  color: var(--ink);
+}
+.brand-mark {
+  width: 46px;
+  height: auto;
+  flex: none;
+}
+.brand-word {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.brand-word i {
+  font-style: normal;
+  color: var(--accent);
+}
+
+/* drifting ink motes */
+.mote {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--ink-faint);
+  animation: drift linear infinite;
+  z-index: 1;
+}
+.mote.red {
+  background: rgba(216, 64, 31, 0.5);
+}
+@keyframes drift {
+  0% { transform: translate(0, -6vh) rotate(0deg) scale(0.7); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.5; }
+  100% { transform: translate(var(--dx, -5vw), 104vh) rotate(540deg) scale(1); opacity: 0; }
 }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(28px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-@keyframes reveal {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
-@keyframes draw-in {
-  from { width: 0; }
-  to { width: var(--draw-width, 100%); }
-}
-
 .animate-fade-up {
-  animation: fade-up 0.4s ease-out forwards;
+  animation: fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-reveal {
-  animation: reveal 0.6s ease-out forwards;
+@keyframes rise-ch {
+  from { opacity: 0; transform: translateY(0.18em); }
+  to { opacity: 1; transform: none; }
+}
+.rise-ch {
+  display: inline-block;
+  animation: rise-ch 1.2s ease backwards;
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-draw-in {
-  animation: draw-in 0.6s ease-out forwards;
-}
-
-.kinetic-stack {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  line-height: 0.85;
-}
-
-.kinetic-word {
-  font-size: clamp(3rem, 10vw, 7rem);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--ink);
-  margin: 0;
-}
-
-.kinetic-word-outline {
-  font-size: clamp(3rem, 10vw, 7rem);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: transparent;
-  -webkit-text-stroke: 2px var(--ink);
-  margin: 0;
-}
-
-.gallery-frame {
-  position: relative;
-  background: var(--surface);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-
-.gallery-frame::before {
-  content: '';
-  position: absolute;
-  top: 6px; left: 6px; right: 6px; bottom: 6px;
-  border: 1px solid var(--rule);
-  pointer-events: none;
-}
-
-.glass-card {
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--rule);
+@keyframes bob {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, 6px); }
 }
 
 .section-rule {
-  width: 60px;
-  height: 3px;
-  background: var(--ink);
-  margin-bottom: 24px;
+  width: 56px;
+  height: 2px;
+  background: var(--accent);
+  margin-bottom: 22px;
 }

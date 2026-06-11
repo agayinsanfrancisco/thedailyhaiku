@@ -39,6 +39,8 @@ export const haikus = sqliteTable("haikus", {
   eventHeadline: text("event_headline"),
   eventDescription: text("event_description"),
   eventSources: text("event_sources"),
+  seasonWord: text("season_word"),
+  seasonColor: text("season_color"),
   authorName: text("author_name"),
   authorEmail: text("author_email"),
   status: text("status").notNull().default("pending"),

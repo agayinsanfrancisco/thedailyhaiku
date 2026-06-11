@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/800.css";
-import "@fontsource/cormorant-garamond/400.css";
-import "@fontsource/cormorant-garamond/500.css";
-import "@fontsource/cormorant-garamond/600.css";
-import "@fontsource/cormorant-garamond/700.css";
+import "@fontsource/karla/400.css";
+import "@fontsource/karla/500.css";
+import "@fontsource/karla/700.css";
+import "@fontsource/young-serif/400.css";
+import "@fontsource/instrument-serif/400.css";
+import "@fontsource/instrument-serif/400-italic.css";
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 export const metadata: Metadata = {
   title: "the daily haiku",
@@ -36,35 +35,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="bg-[#1a1714]">
-          <nav className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3 group">
-              <span className="w-6 h-6 rounded-full border border-[var(--accent)] flex items-center justify-center text-[10px] text-[var(--accent)] font-serif">
-                h
-              </span>
-              <span className="text-sm text-[#c0b8a8] tracking-tight">
-                the daily haiku
-              </span>
-            </Link>
-            <div className="flex items-center gap-6 text-sm">
-              <Link href="/write" className="text-[#8a8278] hover:text-[#c0b8a8] transition-colors">
-                Write
-              </Link>
-              <Link href="/browse" className="text-[#8a8278] hover:text-[#c0b8a8] transition-colors">
-                Browse
-              </Link>
-            </div>
-          </nav>
-        </div>
-        {children}
-        <footer className="bg-[#1a1714] mt-32">
-          <div className="max-w-5xl mx-auto px-6 py-12 flex items-center justify-between text-xs text-[#5a5248]">
-            <span>&copy; {new Date().getFullYear()} the daily haiku</span>
-            <div className="flex items-center gap-5">
-              <Link href="/write" className="hover:text-[#8a8278] transition-colors">Write</Link>
-              <Link href="/browse" className="hover:text-[#8a8278] transition-colors">Browse</Link>
-            </div>
+        <div className="washi" />
+        <nav className="relative z-10 max-w-6xl mx-auto px-6 sm:px-[4vw] h-20 flex items-center justify-between">
+          <Logo />
+          <div className="flex items-center gap-7 text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+            <Link href="/write" className="text-[var(--ink-soft)] hover:text-[var(--accent)] transition-colors">Write</Link>
+            <Link href="/browse" className="text-[var(--ink-soft)] hover:text-[var(--accent)] transition-colors">Browse</Link>
           </div>
+        </nav>
+        <main className="relative z-[1]">{children}</main>
+        <footer className="relative z-[1] bg-[var(--ink)] text-[rgba(247,243,234,0.55)] text-center py-10 px-6 text-[0.74rem] tracking-[0.2em] uppercase">
+          one event · one poem · <span className="text-[var(--accent)]">every day</span>
         </footer>
       </body>
     </html>

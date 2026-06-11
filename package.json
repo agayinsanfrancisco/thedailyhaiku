@@ -14,7 +14,10 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",
     "@fontsource/cormorant-garamond": "^5.2.11",
+    "@fontsource/instrument-serif": "^5.2.8",
     "@fontsource/inter": "^5.2.8",
+    "@fontsource/karla": "^5.2.8",
+    "@fontsource/young-serif": "^5.2.7",
     "@libsql/client": "^0.17.3",
     "bcryptjs": "^3.0.3",
     "drizzle-kit": "^0.31.10",
