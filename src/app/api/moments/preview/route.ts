@@ -129,5 +129,7 @@ function cors<T extends NextResponse>(res: T): T {
   res.headers.set("Access-Control-Allow-Origin", "*");
   res.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  // Chrome Private Network Access: lets file:// previews reach localhost
+  res.headers.set("Access-Control-Allow-Private-Network", "true");
   return res;
 }
