@@ -570,12 +570,36 @@
   renderCal();
 
   // ===== syllables =====
+  // numbers count as spoken: 1982 → "nine teen eighty two" (5), 49 → "forty nine" (3)
+  const N_ONES = ["zero","one","two","three","four","five","six","seven","eight","nine","ten",
+    "eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nine teen"];
+  const N_TENS = ["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+  const below100 = (n) => n < 20 ? N_ONES[n] : N_TENS[Math.floor(n/10)] + (n%10 ? " " + N_ONES[n%10] : "");
+  function spoken(n) {
+    if (n < 100) return below100(n);
+    if (n < 1000) return N_ONES[Math.floor(n/100)] + " hundred" + (n%100 ? " " + below100(n%100) : "");
+    if (n < 10000) {
+      if (n % 1000 === 0) return N_ONES[n/1000] + " thousand";
+      if (n >= 2000 && n <= 2009) return "two thousand " + N_ONES[n-2000];
+      const p1 = Math.floor(n/100), p2 = n % 100;
+      if (p2 === 0) return below100(p1) + " hundred";
+      if (p2 < 10) return below100(p1) + " oh " + N_ONES[p2];
+      return below100(p1) + " " + below100(p2);
+    }
+    return spoken(Math.floor(n/1000)) + " thousand" + (n%1000 ? " " + spoken(n%1000) : "");
+  }
   function syl(word) {
+    if (/\d/.test(word))
+      return word.replace(/\d+/g, (d) => ` ${spoken(parseInt(d, 10))} `)
+        .split(/\s+/).filter(Boolean).reduce((a, w) => a + syl(w), 0);
     word = word.toLowerCase().replace(/[^a-z]/g, "");
     if (!word) return 0;
     const groups = word.match(/[aeiouy]+/g) || [];
     let n = groups.length || 1;
     if (word.endsWith("e") && !word.endsWith("le") && n > 1) n--;
+    // silent endings: "names" (-es after most consonants), "stamped" (-ed except after t/d)
+    if (/[^sxzhaeiou]es$/.test(word) && !/[cs]hes$/.test(word) && !/[^aeiou]les$/.test(word) && n > 1) n--;
+    if (/[^tdaeiou]ed$/.test(word) && n > 1) n--;
     return Math.max(1, n);
   }
   const sylLine = (t) => t.split(/\s+/).filter(Boolean).reduce((a, w) => a + syl(w), 0);

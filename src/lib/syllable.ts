@@ -1,7 +1,45 @@
 import { syllable } from "syllable";
 
+// "nineteen" is spelled "nine teen" because the syllable package miscounts
+// the joined form as 3 (it's 2); the split form counts correctly
+const ONES = ["zero","one","two","three","four","five","six","seven","eight","nine","ten",
+  "eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nine teen"];
+const TENS = ["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+
+function belowHundredWords(n: number): string {
+  if (n < 20) return ONES[n];
+  return TENS[Math.floor(n / 10)] + (n % 10 ? " " + ONES[n % 10] : "");
+}
+
+// Numbers count as spoken aloud: 1982 → "nineteen eighty two" (5 syllables),
+// 49 → "forty nine" (3). Four-digit numbers read year-style, the way a poet
+// says them; 2000-2009 read as "two thousand six", 1905 as "nineteen oh five".
+export function numberToSpokenWords(n: number): string {
+  if (n < 100) return belowHundredWords(n);
+  if (n < 1000) {
+    const rem = n % 100;
+    return ONES[Math.floor(n / 100)] + " hundred" + (rem ? " " + belowHundredWords(rem) : "");
+  }
+  if (n < 10000) {
+    if (n % 1000 === 0) return ONES[n / 1000] + " thousand";
+    if (n >= 2000 && n <= 2009) return "two thousand " + ONES[n - 2000];
+    const pair1 = Math.floor(n / 100);
+    const pair2 = n % 100;
+    if (pair2 === 0) return belowHundredWords(pair1) + " hundred";
+    if (pair2 < 10) return belowHundredWords(pair1) + " oh " + ONES[pair2];
+    return belowHundredWords(pair1) + " " + belowHundredWords(pair2);
+  }
+  // beyond years, read digit groups plainly: 12345 → "twelve thousand three hundred forty five"
+  return numberToSpokenWords(Math.floor(n / 1000)) + " thousand" +
+    (n % 1000 ? " " + numberToSpokenWords(n % 1000) : "");
+}
+
 export function countSyllables(word: string): number {
   if (!word.trim()) return 0;
+  // digits count as spoken: "1982" → "nineteen eighty two", "49," → "forty nine"
+  if (/\d/.test(word)) {
+    word = word.replace(/\d+/g, (d) => ` ${numberToSpokenWords(parseInt(d, 10))} `);
+  }
   try {
     return syllable(word);
   } catch {
