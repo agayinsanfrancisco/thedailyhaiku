@@ -1,6 +1,9 @@
 import { cookies } from "next/headers";
 import { getIronSession } from "iron-session";
 
+// How long an admin login stays valid before re-entry is required.
+const SESSION_TTL_MS = 1000 * 60 * 60 * 12; // 12 hours
+
 const SESSION_OPTIONS = {
   password:
     process.env.SESSION_SECRET ??
@@ -10,11 +13,13 @@ const SESSION_OPTIONS = {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
     sameSite: "lax" as const,
+    maxAge: SESSION_TTL_MS / 1000, // browser drops the cookie at the TTL too
   },
 };
 
 export interface SessionData {
   isAdmin?: boolean;
+  expiresAt?: number;
 }
 
 export async function getSession() {
@@ -33,8 +38,18 @@ export async function verifyAdminPassword(
 export async function requireAdmin(): Promise<boolean> {
   try {
     const session = await getSession();
-    return session.isAdmin === true;
+    if (session.isAdmin !== true) return false;
+    // expired login → clear it and force re-entry
+    if (!session.expiresAt || session.expiresAt < Date.now()) {
+      session.destroy();
+      return false;
+    }
+    return true;
   } catch {
     return false;
   }
+}
+
+export function sessionExpiry(): number {
+  return Date.now() + SESSION_TTL_MS;
 }

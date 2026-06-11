@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyAdminPassword, getSession } from "@/lib/auth";
+import { verifyAdminPassword, getSession, sessionExpiry } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
 
     const session = await getSession();
     session.isAdmin = true;
+    session.expiresAt = sessionExpiry();
     await session.save();
 
     return NextResponse.json({ success: true });
