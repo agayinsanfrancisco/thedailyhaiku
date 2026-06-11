@@ -7,7 +7,7 @@ import { and, eq, desc } from "drizzle-orm";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { date, line1, line2, line3, title, categoryId, eventId, isFiller, validationLink, eventHeadline, eventDescription, eventSources, authorName, authorEmail } = body;
+    const { date, line1, line2, line3, title, categoryId, eventId, isFiller, validationLink, eventHeadline, eventDescription, eventSources, authorName, authorEmail, seasonWord, seasonColor } = body;
 
     if (!date || !line1 || !line2 || !line3) {
       return NextResponse.json({ error: "Missing required fields (date, line1, line2, line3)" }, { status: 400 });
@@ -57,6 +57,8 @@ export async function POST(request: NextRequest) {
       eventSources: eventSources ?? null,
       authorName: authorName ?? null,
       authorEmail: authorEmail ?? null,
+      seasonWord: seasonWord?.trim() || null,
+      seasonColor: seasonColor ?? null,
       status: "pending",
     }).returning();
 

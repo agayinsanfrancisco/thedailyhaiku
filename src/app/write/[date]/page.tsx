@@ -1,6 +1,7 @@
-import WriteDateClient from "./WriteDateClient";
+import { redirect } from "next/navigation";
 
-export default async function WriteDatePage({
+// Old deep-link shape — funnel into the staged /write flow.
+export default async function WriteDateRedirect({
   params,
   searchParams,
 }: {
@@ -9,5 +10,5 @@ export default async function WriteDatePage({
 }) {
   const { date } = await params;
   const { event } = await searchParams;
-  return <WriteDateClient date={date} initialEventId={Number(event) || null} />;
+  redirect(`/write?date=${date}${event ? `&event=${event}` : ""}`);
 }
