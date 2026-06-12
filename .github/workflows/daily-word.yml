@@ -1,0 +1,19 @@
+name: Daily Word Email
+
+# Sends the day's word + haiku to subscribers each morning. The endpoint
+# skips itself if there's no approved haiku for the day.
+on:
+  schedule:
+    - cron: "0 14 * * *" # 14:00 UTC ≈ 7am PT / 9am CT
+  workflow_dispatch: {} # manual run, for testing
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger daily-word send
+        run: |
+          out=$(curl --fail -sS -X POST \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            "https://thedailyhaiku.com/api/cron/daily-word")
+          echo "$out"
