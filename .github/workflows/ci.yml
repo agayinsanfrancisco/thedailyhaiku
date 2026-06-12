@@ -53,9 +53,41 @@ jobs:
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    env:
+      APP_UUID: obgqd1tk0gj40rkob7lx27kb
+      COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
     steps:
       - name: Trigger Coolify deployment
+        id: trigger
         run: |
-          curl --fail -sS -X POST \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
-            "https://app.coolify.io/api/v1/deploy?uuid=obgqd1tk0gj40rkob7lx27kb"
+          resp=$(curl --fail -sS -X POST \
+            -H "Authorization: Bearer $COOLIFY_TOKEN" \
+            "https://app.coolify.io/api/v1/deploy?uuid=$APP_UUID")
+          echo "$resp"
+          uuid=$(echo "$resp" | jq -r '.deployments[0].deployment_uuid')
+          if [ -z "$uuid" ] || [ "$uuid" = "null" ]; then
+            echo "::error::Could not read deployment_uuid from Coolify response"
+            exit 1
+          fi
+          echo "deployment_uuid=$uuid" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for deployment to finish
+        run: |
+          uuid="${{ steps.trigger.outputs.deployment_uuid }}"
+          echo "Watching Coolify deployment $uuid"
+          deadline=$(( $(date +%s) + 900 ))   # 15 min cap
+          while :; do
+            status=$(curl -sS -H "Authorization: Bearer $COOLIFY_TOKEN" \
+              "https://app.coolify.io/api/v1/deployments/$uuid" | jq -r '.status // "unknown"')
+            echo "status: $status"
+            case "$status" in
+              finished|success)
+                echo "Deployment succeeded."; exit 0;;
+              failed|error|cancelled)
+                echo "::error::Coolify deployment ended with status: $status"; exit 1;;
+            esac
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "::error::Timed out waiting for deployment after 15 minutes"; exit 1
+            fi
+            sleep 15
+          done
