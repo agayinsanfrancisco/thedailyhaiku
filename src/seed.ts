@@ -92,7 +92,6 @@ const eventsList = [
   { month: 9, day: 29, year: 1982, title: "Cyanide-laced Tylenol kills seven people in Chicago area", categorySlug: "politics-history" },
   { month: 10, day: 1, year: 1971, title: "Walt Disney World opens in Orlando, Florida", categorySlug: "art-design" },
   { month: 10, day: 5, year: 1962, title: "Dr. No, the first James Bond film, premieres", categorySlug: "movies-tv" },
-  { month: 10, day: 11, year: 1984, title: "Space Shuttle Challenger astronaut Kathryn Sullivan becomes first American woman to walk in space", categorySlug: "science-nature" },
   { month: 10, day: 15, year: 1997, title: "Cassini-Huygens spacecraft launches toward Saturn", categorySlug: "science-nature" },
   { month: 10, day: 18, year: 1989, title: "Galileo spacecraft launches on its mission to Jupiter", categorySlug: "science-nature" },
   { month: 10, day: 22, year: 1962, title: "Cuban Missile Crisis begins as Kennedy reveals Soviet missiles in Cuba", categorySlug: "politics-history" },

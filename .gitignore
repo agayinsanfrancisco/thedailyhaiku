@@ -38,6 +38,7 @@ yarn-error.log*
 # sqlite database
 /data/*
 !/data/events/
+!/data/retired-titles.json
 
 # vercel
 .vercel
