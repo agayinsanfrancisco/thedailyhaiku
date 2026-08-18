@@ -14,7 +14,7 @@ function manageTokenFrom(request: NextRequest): string | null {
 // GET with a valid manage token returns the haiku for the owner's manage view.
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!/^\d+$/.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!/^\d{1,9}$/.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const token = manageTokenFrom(request);
   const row = await db
     .select({
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 // DELETE: the poet (with their token) or an admin may remove a haiku.
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!/^\d+$/.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!/^\d{1,9}$/.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const row = await db.select({ hash: haikus.manageTokenHash }).from(haikus).where(eq(haikus.id, Number(id))).limit(1);
   if (!row[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -63,7 +63,7 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  if (!/^\d+$/.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!/^\d{1,9}$/.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const body = await request.json();
   const { status, adminNotes } = body;
 

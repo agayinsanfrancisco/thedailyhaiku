@@ -9,9 +9,9 @@ import HeroWord from "@/components/HeroWord";
 
 export const dynamic = "force-dynamic";
 
-// Only positive integers are valid ids; anything else (e.g. "abc") is a 404, not a DB error.
+// Only small positive integers are valid ids (int4 column); "abc" or a 20-digit number is a 404, not a DB error.
 function parseId(raw: string): number | null {
-  return /^\d+$/.test(raw) ? Number(raw) : null;
+  return /^\d{1,9}$/.test(raw) ? Number(raw) : null;
 }
 
 async function getHaiku(id: number) {

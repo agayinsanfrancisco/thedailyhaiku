@@ -17,7 +17,7 @@ const ACCENT = "#c2391b";
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const fonts = await ogFonts();
-  const row = !/^\d+$/.test(id) ? [] : await db
+  const row = !/^\d{1,9}$/.test(id) ? [] : await db
     .select({
       line1: haikus.line1, line2: haikus.line2, line3: haikus.line3,
       authorName: haikus.authorName, seasonWord: haikus.seasonWord, seasonColor: haikus.seasonColor,
