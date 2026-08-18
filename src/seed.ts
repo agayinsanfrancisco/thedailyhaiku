@@ -1,7 +1,17 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./lib/db/schema";
-import additionalEvents from "../data/additional-events.json";
+import { readdirSync, readFileSync } from "fs";
+import { join } from "path";
+
+// Every data/events/*.json file is a list of {m, d, y, t, c} — month, day,
+// year, title, category slug (optional "s": source URL, ignored here).
+type EventRow = { m: number; d: number; y: number | null; t: string; c: string; s?: string };
+const eventsDir = join(process.cwd(), "data", "events");
+const additionalEvents: EventRow[] = readdirSync(eventsDir)
+  .filter((f) => f.endsWith(".json"))
+  .sort()
+  .flatMap((f) => JSON.parse(readFileSync(join(eventsDir, f), "utf8")) as EventRow[]);
 
 const client = postgres(process.env.DATABASE_URL!, { max: 1, prepare: false });
 const db = drizzle(client, { schema });
@@ -16,6 +26,7 @@ const categoriesList = [
   { name: "Literature", slug: "literature", description: "Literary works and authors", color: "#3a6a6a" },
   { name: "Art & Design", slug: "art-design", description: "Artistic and design achievements", color: "#6a5a3a" },
   { name: "LGBTQIA+", slug: "lgbtqia", description: "Queer history and culture", color: "#8a4a6a" },
+  { name: "Women's History", slug: "womens-history", description: "Women who made, changed, and led", color: "#8a3a4a" },
 ];
 
 const eventsList = [

@@ -47,13 +47,20 @@ async function getTodayHaiku(mmdd: string, year: number) {
   return result[0] ?? null;
 }
 
+// Up to 6 suggestions for the day. One LGBTQIA+ and one Women's History
+// moment are always included when the day has them; the rest are a random
+// pick of everything else, so the strip stays varied across reloads.
+const PINNED_SLUGS = ["lgbtqia", "womens-history"];
 async function getTodayEvents(month: number, day: number) {
-  return db
-    .select({ id: events.id, title: events.title, year: events.year })
+  const rows = await db
+    .select({ id: events.id, title: events.title, year: events.year, slug: categories.slug })
     .from(events)
+    .leftJoin(categories, eq(events.categoryId, categories.id))
     .where(and(eq(events.month, month), eq(events.day, day)))
-    .orderBy(sql`RANDOM()`)
-    .limit(3);
+    .orderBy(sql`RANDOM()`);
+  const pinned = PINNED_SLUGS.flatMap((slug) => rows.filter((r) => r.slug === slug).slice(0, 1));
+  const rest = rows.filter((r) => !pinned.includes(r));
+  return [...pinned, ...rest].slice(0, 6);
 }
 
 const MOTES = [
