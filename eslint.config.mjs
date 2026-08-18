@@ -10,6 +10,8 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  // Generated / non-source paths — never lint these.
+  { ignores: [".next/**", "next-env.d.ts", ".remember/**", ".nodeterm/**", "drizzle/**"] },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 

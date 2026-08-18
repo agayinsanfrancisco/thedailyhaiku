@@ -2,6 +2,11 @@ name: Daily Word Email
 
 # Sends the day's word + haiku to subscribers each morning. The endpoint
 # skips itself if there's no approved haiku for the day.
+#
+# The request goes straight to the origin (spica) via --resolve, bypassing
+# Cloudflare: the zone runs Bot Fight Mode, which 403s cloud-provider IPs
+# such as GitHub's runners and cannot be exempted with WAF rules. TLS is
+# still verified against the origin's Let's Encrypt cert for the hostname.
 on:
   schedule:
     - cron: "0 14 * * *" # 14:00 UTC ≈ 7am PT / 9am CT
@@ -13,7 +18,8 @@ jobs:
     steps:
       - name: Trigger daily-word send
         run: |
-          out=$(curl --fail -sS -X POST \
+          out=$(curl --fail-with-body -sS -X POST \
+            --resolve thedailyhaiku.com:443:178.156.195.129 \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             "https://thedailyhaiku.com/api/cron/daily-word")
           echo "$out"

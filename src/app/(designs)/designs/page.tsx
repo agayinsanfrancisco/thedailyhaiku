@@ -1,4 +1,3 @@
-import Link from "next/link";
 
 const MAKER = {
   name: "the daily haiku",
