@@ -1,7 +1,18 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./lib/db/schema";
-import additionalEvents from "../data/additional-events.json";
+import { existsSync, readdirSync, readFileSync } from "fs";
+import { and, inArray, isNotNull, notInArray } from "drizzle-orm";
+import { join } from "path";
+
+// Every data/events/*.json file is a list of {m, d, y, t, c} — month, day,
+// year, title, category slug (optional "s": source URL, ignored here).
+type EventRow = { m: number; d: number; y: number | null; t: string; c: string; s?: string };
+const eventsDir = join(process.cwd(), "data", "events");
+const additionalEvents: EventRow[] = readdirSync(eventsDir)
+  .filter((f) => f.endsWith(".json"))
+  .sort()
+  .flatMap((f) => JSON.parse(readFileSync(join(eventsDir, f), "utf8")) as EventRow[]);
 
 const client = postgres(process.env.DATABASE_URL!, { max: 1, prepare: false });
 const db = drizzle(client, { schema });
@@ -16,6 +27,7 @@ const categoriesList = [
   { name: "Literature", slug: "literature", description: "Literary works and authors", color: "#3a6a6a" },
   { name: "Art & Design", slug: "art-design", description: "Artistic and design achievements", color: "#6a5a3a" },
   { name: "LGBTQIA+", slug: "lgbtqia", description: "Queer history and culture", color: "#8a4a6a" },
+  { name: "Women's History", slug: "womens-history", description: "Women who made, changed, and led", color: "#8a3a4a" },
 ];
 
 const eventsList = [
@@ -80,7 +92,6 @@ const eventsList = [
   { month: 9, day: 29, year: 1982, title: "Cyanide-laced Tylenol kills seven people in Chicago area", categorySlug: "politics-history" },
   { month: 10, day: 1, year: 1971, title: "Walt Disney World opens in Orlando, Florida", categorySlug: "art-design" },
   { month: 10, day: 5, year: 1962, title: "Dr. No, the first James Bond film, premieres", categorySlug: "movies-tv" },
-  { month: 10, day: 11, year: 1984, title: "Space Shuttle Challenger astronaut Kathryn Sullivan becomes first American woman to walk in space", categorySlug: "science-nature" },
   { month: 10, day: 15, year: 1997, title: "Cassini-Huygens spacecraft launches toward Saturn", categorySlug: "science-nature" },
   { month: 10, day: 18, year: 1989, title: "Galileo spacecraft launches on its mission to Jupiter", categorySlug: "science-nature" },
   { month: 10, day: 22, year: 1962, title: "Cuban Missile Crisis begins as Kennedy reveals Soviet missiles in Cuba", categorySlug: "politics-history" },
@@ -145,6 +156,19 @@ async function main() {
       .values(evt)
       .onConflictDoNothing({ target: [schema.events.month, schema.events.day, schema.events.title] });
     console.log(`  Event: ${evt.month}/${evt.day} - ${evt.title}`);
+  }
+
+  // Retire superseded/duplicate events by exact title — but never one a haiku
+  // was written about (haikus.event_id references events.id).
+  const retiredPath = join(process.cwd(), "data", "retired-titles.json");
+  const retired: string[] = existsSync(retiredPath) ? JSON.parse(readFileSync(retiredPath, "utf8")) : [];
+  if (retired.length) {
+    const referenced = db.select({ id: schema.haikus.eventId }).from(schema.haikus).where(isNotNull(schema.haikus.eventId));
+    const gone = await db
+      .delete(schema.events)
+      .where(and(inArray(schema.events.title, retired), notInArray(schema.events.id, referenced)))
+      .returning({ title: schema.events.title });
+    for (const g of gone) console.log(`  Retired: ${g.title}`);
   }
 
   console.log("Seed complete!");
