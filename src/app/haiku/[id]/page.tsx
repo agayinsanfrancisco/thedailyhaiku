@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { haikus, categories } from "@/lib/db/schema";
@@ -7,6 +8,11 @@ import { wordOfTheDay } from "@/lib/design";
 import HeroWord from "@/components/HeroWord";
 
 export const dynamic = "force-dynamic";
+
+// Only positive integers are valid ids; anything else (e.g. "abc") is a 404, not a DB error.
+function parseId(raw: string): number | null {
+  return /^\d+$/.test(raw) ? Number(raw) : null;
+}
 
 async function getHaiku(id: number) {
   const result = await db
@@ -35,9 +41,28 @@ async function getHaiku(id: number) {
   return result[0] ?? null;
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const numId = parseId(id);
+  const haiku = numId === null ? null : await getHaiku(numId);
+  if (!haiku) return {};
+  const poem = `${haiku.line1} / ${haiku.line2} / ${haiku.line3}`;
+  const title = `${haiku.eventHeadline ?? "a haiku"} — the daily haiku`;
+  const url = `https://thedailyhaiku.com/haiku/${haiku.id}`;
+  return {
+    title,
+    description: poem,
+    alternates: { canonical: url },
+    openGraph: { title, description: poem, url, siteName: "the daily haiku", type: "article" },
+    twitter: { card: "summary_large_image", title, description: poem },
+  };
+}
+
 export default async function HaikuPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const haiku = await getHaiku(parseInt(id));
+  const numId = parseId(id);
+  if (numId === null) notFound();
+  const haiku = await getHaiku(numId);
   if (!haiku) notFound();
 
   const month = parseInt(haiku.date.split("-")[0]);

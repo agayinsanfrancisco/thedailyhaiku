@@ -14,6 +14,7 @@ function manageTokenFrom(request: NextRequest): string | null {
 // GET with a valid manage token returns the haiku for the owner's manage view.
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (!/^\d+$/.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const token = manageTokenFrom(request);
   const row = await db
     .select({
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     })
     .from(haikus)
     .leftJoin(categories, eq(haikus.categoryId, categories.id))
-    .where(eq(haikus.id, parseInt(id)))
+    .where(eq(haikus.id, Number(id)))
     .limit(1);
   if (!row[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const owns = tokenMatches(token, row[0].manageTokenHash);
@@ -38,7 +39,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 // DELETE: the poet (with their token) or an admin may remove a haiku.
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const row = await db.select({ hash: haikus.manageTokenHash }).from(haikus).where(eq(haikus.id, parseInt(id))).limit(1);
+  if (!/^\d+$/.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const row = await db.select({ hash: haikus.manageTokenHash }).from(haikus).where(eq(haikus.id, Number(id))).limit(1);
   if (!row[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const owns = tokenMatches(manageTokenFrom(request), row[0].hash);
@@ -47,7 +49,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     return NextResponse.json({ error: "Not yours to delete" }, { status: 403 });
   }
 
-  await db.delete(haikus).where(eq(haikus.id, parseInt(id)));
+  await db.delete(haikus).where(eq(haikus.id, Number(id)));
   return NextResponse.json({ deleted: true });
 }
 
@@ -61,6 +63,7 @@ export async function PATCH(
   }
 
   const { id } = await params;
+  if (!/^\d+$/.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const body = await request.json();
   const { status, adminNotes } = body;
 
@@ -75,7 +78,7 @@ export async function PATCH(
       adminNotes: adminNotes ?? null,
       updatedAt: new Date().toISOString(),
     })
-    .where(eq(haikus.id, parseInt(id)))
+    .where(eq(haikus.id, Number(id)))
     .returning();
 
   if (updated.length === 0) {
