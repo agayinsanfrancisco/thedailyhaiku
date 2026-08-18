@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { events, categories } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -31,7 +31,12 @@ export async function GET(request: NextRequest) {
     })
     .from(events)
     .leftJoin(categories, eq(events.categoryId, categories.id))
-    .where(and(eq(events.month, month), eq(events.day, day)));
+    .where(and(eq(events.month, month), eq(events.day, day)))
+    // LGBTQIA+ and Women's History moments lead the list; the rest by year.
+    .orderBy(
+      sql`case when ${categories.slug} in ('lgbtqia', 'womens-history') then 0 else 1 end`,
+      events.year,
+    );
 
   return NextResponse.json({ events: result });
 }
