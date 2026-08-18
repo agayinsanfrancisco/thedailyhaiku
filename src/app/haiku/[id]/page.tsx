@@ -46,6 +46,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const numId = parseId(id);
   const haiku = numId === null ? null : await getHaiku(numId);
   if (!haiku) return {};
+  // Unapproved poems are viewable by their author but must not be indexed or previewed.
+  if (haiku.status !== "approved") return { robots: { index: false, follow: false } };
   const poem = `${haiku.line1} / ${haiku.line2} / ${haiku.line3}`;
   const title = `${haiku.eventHeadline ?? "a haiku"} — the daily haiku`;
   const url = `https://thedailyhaiku.com/haiku/${haiku.id}`;
