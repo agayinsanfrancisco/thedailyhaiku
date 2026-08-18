@@ -24,6 +24,20 @@ seed_keys = {(int(m),int(dd),t) for m,dd,t in re.findall(r'\{ month: (\d+), day:
 seen = collections.Counter([(e["m"],e["d"],e["t"].strip().lower()) for _,e in rows] + [(m,d,t.lower()) for m,d,t in seed_keys])
 for k,n in seen.items():
     if n>1: errs.append(f"duplicate: {k[0]}/{k[1]} {k[2]!r} x{n}")
+# Fuzzy duplicates: same day, same year, heavy word overlap (different wording of one fact).
+STOP = {"the","a","an","of","in","on","at","to","for","and","is","are","as","by","with","first","becomes","become","his","her","its","from","after","that","new"}
+def toks(t): return {w for w in re.findall(r"[a-z0-9']+", t.lower()) if w not in STOP and len(w) > 2}
+by_day = collections.defaultdict(list)
+for f,e in rows: by_day[(e["m"],e["d"],e.get("y"))].append((f,e["t"]))
+for m,dd,t in seed_keys:
+    y = re.search(r'month: %d, day: %d, year: (\d+), title: "%s"' % (m,dd,re.escape(t)), src)
+    by_day[(m,dd,int(y.group(1)) if y else None)].append(("src/seed.ts",t))
+for key,lst in by_day.items():
+    for i in range(len(lst)):
+        for j in range(i+1,len(lst)):
+            a,b = toks(lst[i][1]), toks(lst[j][1])
+            if a and b and len(a&b)/min(len(a),len(b)) >= 0.5:
+                errs.append(f"fuzzy-dup {key[0]}/{key[1]} {key[2]}: {lst[i][1]!r} ({lst[i][0]}) ~ {lst[j][1]!r} ({lst[j][0]})")
 per = collections.defaultdict(collections.Counter)
 for _,e in rows: per[(e["m"],e["d"])][e["c"]] += 1
 for m,d,_ in seed_keys: per[(m,d)]["seed"] += 1

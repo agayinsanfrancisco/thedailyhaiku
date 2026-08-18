@@ -1,7 +1,8 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./lib/db/schema";
-import { readdirSync, readFileSync } from "fs";
+import { existsSync, readdirSync, readFileSync } from "fs";
+import { and, inArray, isNotNull, notInArray } from "drizzle-orm";
 import { join } from "path";
 
 // Every data/events/*.json file is a list of {m, d, y, t, c} — month, day,
@@ -156,6 +157,19 @@ async function main() {
       .values(evt)
       .onConflictDoNothing({ target: [schema.events.month, schema.events.day, schema.events.title] });
     console.log(`  Event: ${evt.month}/${evt.day} - ${evt.title}`);
+  }
+
+  // Retire superseded/duplicate events by exact title — but never one a haiku
+  // was written about (haikus.event_id references events.id).
+  const retiredPath = join(process.cwd(), "data", "retired-titles.json");
+  const retired: string[] = existsSync(retiredPath) ? JSON.parse(readFileSync(retiredPath, "utf8")) : [];
+  if (retired.length) {
+    const referenced = db.select({ id: schema.haikus.eventId }).from(schema.haikus).where(isNotNull(schema.haikus.eventId));
+    const gone = await db
+      .delete(schema.events)
+      .where(and(inArray(schema.events.title, retired), notInArray(schema.events.id, referenced)))
+      .returning({ title: schema.events.title });
+    for (const g of gone) console.log(`  Retired: ${g.title}`);
   }
 
   console.log("Seed complete!");
